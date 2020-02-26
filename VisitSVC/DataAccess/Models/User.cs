@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VisitSVC
+namespace VisitSVC.DataAccess.Models
 {
-    public class User
+    public partial class User
     {
         public User()
         {
-            PostComments = new HashSet<PostComments>();
-            Posts = new HashSet<Posts>();
+            Post = new HashSet<Post>();
+            PostComment = new HashSet<PostComment>();
             UserFollowingFkFollowUser = new HashSet<UserFollowing>();
             UserFollowingFkMainUser = new HashSet<UserFollowing>();
-            UserLocations = new HashSet<UserLocations>();
-            UserMessagesFkReciverUser = new HashSet<UserMessages>();
-            UserMessagesFkSenderUser = new HashSet<UserMessages>();
-            UserTags = new HashSet<UserTags>();
+            UserLocation = new HashSet<UserLocation>();
+            UserMessageFkRecieverUser = new HashSet<UserMessage>();
+            UserMessageFkSenderUser = new HashSet<UserMessage>();
         }
 
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserId { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
@@ -30,13 +31,12 @@ namespace VisitSVC
 
         public virtual Location FkBirthLocation { get; set; }
         public virtual Location FkResidenceLocation { get; set; }
-        public virtual ICollection<PostComments> PostComments { get; set; }
-        public virtual ICollection<Posts> Posts { get; set; }
+        public virtual ICollection<Post> Post { get; set; }
+        public virtual ICollection<PostComment> PostComment { get; set; }
         public virtual ICollection<UserFollowing> UserFollowingFkFollowUser { get; set; }
         public virtual ICollection<UserFollowing> UserFollowingFkMainUser { get; set; }
-        public virtual ICollection<UserLocations> UserLocations { get; set; }
-        public virtual ICollection<UserMessages> UserMessagesFkReciverUser { get; set; }
-        public virtual ICollection<UserMessages> UserMessagesFkSenderUser { get; set; }
-        public virtual ICollection<UserTags> UserTags { get; set; }
+        public virtual ICollection<UserLocation> UserLocation { get; set; }
+        public virtual ICollection<UserMessage> UserMessageFkRecieverUser { get; set; }
+        public virtual ICollection<UserMessage> UserMessageFkSenderUser { get; set; }
     }
 }

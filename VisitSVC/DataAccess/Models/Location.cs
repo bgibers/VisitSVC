@@ -1,27 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VisitSVC
+namespace VisitSVC.DataAccess.Models
 {
-    public class Location
+    public partial class Location
     {
         public Location()
         {
-            PostLocations = new HashSet<PostLocations>();
             UserFkBirthLocation = new HashSet<User>();
             UserFkResidenceLocation = new HashSet<User>();
-            UserLocations = new HashSet<UserLocations>();
+            UserLocation = new HashSet<UserLocation>();
         }
 
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int LocationId { get; set; }
         public string LocationCode { get; set; }
         public string LocationName { get; set; }
         public string LocationType { get; set; }
         public string LocationCountry { get; set; }
 
-        public virtual ICollection<PostLocations> PostLocations { get; set; }
         public virtual ICollection<User> UserFkBirthLocation { get; set; }
         public virtual ICollection<User> UserFkResidenceLocation { get; set; }
-        public virtual ICollection<UserLocations> UserLocations { get; set; }
+        public virtual ICollection<UserLocation> UserLocation { get; set; }
     }
 }

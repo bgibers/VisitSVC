@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VisitSVC
+namespace VisitSVC.DataAccess.Models
 {
-    public class UserFollowing
+    public partial class UserFollowing
     {
-        public int FollowUserId { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int UserFollowingId { get; set; }
         public int? FkMainUserId { get; set; }
         public int? FkFollowUserId { get; set; }
         public DateTime? FollowSince { get; set; }
