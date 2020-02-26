@@ -1,18 +1,23 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
+using Visit.DataAccess.Models;
+using System.Configuration;
+using Microsoft.Extensions.Configuration;
 
-namespace VisitSVC.DataAccess.Models
+namespace Visit.DataAccess
 {
     public partial class VisitContext : DbContext
     {
-        public VisitContext()
+        private readonly IConfiguration _configuration;
+        
+        public VisitContext(IConfiguration configuration)
         {
+            _configuration = configuration;
         }
 
-        public VisitContext(DbContextOptions<VisitContext> options)
+        public VisitContext(DbContextOptions<VisitContext> options, IConfiguration configuration)
             : base(options)
         {
+            _configuration = configuration;
         }
 
         public virtual DbSet<Location> Location { get; set; }
@@ -32,8 +37,7 @@ namespace VisitSVC.DataAccess.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseMySql("server=localhost;port=1521;user=VisitDBA;password=Clemson17;database=VisitV2", x => x.ServerVersion("8.0.17-mysql"));
+                optionsBuilder.UseMySql(_configuration.GetConnectionString("MySql"), x => x.ServerVersion("8.0.17-mysql"));
             }
         }
 

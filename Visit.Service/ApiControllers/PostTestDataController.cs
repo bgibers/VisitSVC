@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using VisitSVC.DataAccess.Models;
-using VisitSVC.Services;
+using Visit.DataAccess.Models;
+using Visit.Service.Services;
 
-namespace VisitSVC.Controllers
+namespace Visit.Service.ApiControllers
 {
     [Route("api/TestData")]
     [ApiController]
@@ -18,13 +18,15 @@ namespace VisitSVC.Controllers
         }
 
         [HttpGet("users")]
+        [ProducesResponseType(typeof(List<User>),200)]
         public Task<List<User>> GetAll()
         {
             return _dataService.GetUsers();
         }
 
         [HttpPost("post")]
-        public async Task<ActionResult<User>> PostTest()
+        [ProducesResponseType(typeof(int),200)]
+        public async Task<ActionResult<int>> PostTest()
         {
             return new ObjectResult(await _dataService.CreateUsers());
         }

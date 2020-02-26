@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace VisitSVC.DataAccess.Models
+namespace Visit.DataAccess.Models
 {
     public partial class User
     {

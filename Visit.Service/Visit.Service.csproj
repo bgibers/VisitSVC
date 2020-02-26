@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <AssemblyName>Visit.Service</AssemblyName>
+        <RootNamespace>Visit.Service</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="9.0.0" />
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0" />
+        <PackageReference Include="NSwag.AspNetCore" Version="13.2.3" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.1.1" />
+        <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+    </ItemGroup>
+    <ItemGroup>
+        <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.3" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Visit.DataAccess\Visit.DataAccess.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="BusinessLogic\Models" />
+    </ItemGroup>
+</Project>
