@@ -15,6 +15,8 @@ namespace Visit.DataAccess.Models
         public int UserLocationId { get; set; }
         public int? FkLocationId { get; set; }
         public int? FkUserId { get; set; }
+        
+        // todo make this an enum
         public string Status { get; set; }
         public string Venue { get; set; }
 
