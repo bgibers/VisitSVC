@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Visit.Service.BusinessLogic.Interfaces;
-using Visit.Service.ConfigModels;
+using Visit.Service.Config;
 
 namespace Visit.Service.BusinessLogic
 {

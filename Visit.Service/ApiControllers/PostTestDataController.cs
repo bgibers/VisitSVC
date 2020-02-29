@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Visit.DataAccess.Models;
-using Visit.Service.Services;
+using Visit.Service.BusinessLogic;
 
 namespace Visit.Service.ApiControllers
 {

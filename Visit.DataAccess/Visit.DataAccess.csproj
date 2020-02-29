@@ -6,9 +6,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Folder Include="EntityFramework\Migrations" />
       <Folder Include="Helpers" />
       <Folder Include="Mappings" />
-      <Folder Include="Migrations" />
     </ItemGroup>
 
     <ItemGroup>

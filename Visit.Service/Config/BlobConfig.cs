@@ -1,4 +1,4 @@
-namespace Visit.Service.ConfigModels
+namespace Visit.Service.Config
 {
     public class BlobConfig
     {

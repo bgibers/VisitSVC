@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Visit.DataAccess.Models;
-using System.Configuration;
 using Microsoft.Extensions.Configuration;
+using Visit.DataAccess.Models;
 
-namespace Visit.DataAccess
+namespace Visit.DataAccess.EntityFramework
 {
     public partial class VisitContext : DbContext
     {
