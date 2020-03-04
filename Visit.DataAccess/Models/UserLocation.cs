@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Visit.DataAccess.Models
 {
@@ -11,13 +10,11 @@ namespace Visit.DataAccess.Models
             PostUserLocation = new HashSet<PostUserLocation>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserLocationId { get; set; }
         public int? FkLocationId { get; set; }
-        public int? FkUserId { get; set; }
-        
-        // todo make this an enum
+        public string FkUserId { get; set; }
         public string Status { get; set; }
+        public string City { get; set; }
         public string Venue { get; set; }
 
         public virtual Location FkLocation { get; set; }

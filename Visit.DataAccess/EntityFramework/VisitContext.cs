@@ -1,24 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Visit.DataAccess.Models;
 
 namespace Visit.DataAccess.EntityFramework
 {
     public partial class VisitContext : DbContext
     {
-        private readonly IConfiguration _configuration;
-        
-        public VisitContext(IConfiguration configuration)
+        public VisitContext()
         {
-            _configuration = configuration;
         }
 
-        public VisitContext(DbContextOptions<VisitContext> options, IConfiguration configuration)
+        public VisitContext(DbContextOptions<VisitContext> options)
             : base(options)
         {
-            _configuration = configuration;
         }
 
+        public virtual DbSet<Like> Like { get; set; }
         public virtual DbSet<Location> Location { get; set; }
         public virtual DbSet<LocationTag> LocationTag { get; set; }
         public virtual DbSet<Post> Post { get; set; }
@@ -36,12 +32,47 @@ namespace Visit.DataAccess.EntityFramework
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql(_configuration.GetConnectionString("MySql"), x => x.ServerVersion("8.0.17-mysql"));
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+                optionsBuilder.UseMySql("server=localhost;port=1521;user=VisitDBA;password=Clemson17;database=VisitV2", x => x.ServerVersion("8.0.17-mysql"));
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Like>(entity =>
+            {
+                entity.HasIndex(e => e.FkPostId)
+                    .HasName("FK_PostId");
+
+                entity.HasIndex(e => e.FkUserId)
+                    .HasName("FK_UserId");
+
+                entity.Property(e => e.LikeId).HasColumnType("int(11)");
+
+                entity.Property(e => e.FkPostId)
+                    .HasColumnName("FK_PostId")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.FkUserId)
+                    .IsRequired()
+                    .HasColumnName("FK_UserId")
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
+
+                entity.HasOne(d => d.FkPost)
+                    .WithMany(p => p.Like)
+                    .HasForeignKey(d => d.FkPostId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("Like_ibfk_1");
+
+                entity.HasOne(d => d.FkUser)
+                    .WithMany(p => p.Like)
+                    .HasForeignKey(d => d.FkUserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("Like_ibfk_2");
+            });
+
             modelBuilder.Entity<Location>(entity =>
             {
                 entity.Property(e => e.LocationId).HasColumnType("int(11)");
@@ -116,7 +147,9 @@ namespace Visit.DataAccess.EntityFramework
 
                 entity.Property(e => e.FkUserId)
                     .HasColumnName("FK_UserId")
-                    .HasColumnType("int(11)");
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.Property(e => e.PostCaption)
                     .HasColumnType("varchar(5000)")
@@ -162,7 +195,9 @@ namespace Visit.DataAccess.EntityFramework
 
                 entity.Property(e => e.FkUserIdOfCommenting)
                     .HasColumnName("FK_UserId_Of_commenting")
-                    .HasColumnType("int(11)");
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.HasOne(d => d.FkPost)
                     .WithMany(p => p.PostComment)
@@ -270,7 +305,10 @@ namespace Visit.DataAccess.EntityFramework
                 entity.HasIndex(e => e.FkResidenceLocationId)
                     .HasName("FK_ResidenceLocationId");
 
-                entity.Property(e => e.UserId).HasColumnType("int(11)");
+                entity.Property(e => e.UserId)
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.Property(e => e.Avi)
                     .HasColumnType("varchar(150)")
@@ -297,11 +335,6 @@ namespace Visit.DataAccess.EntityFramework
 
                 entity.Property(e => e.Lastname)
                     .HasColumnType("varchar(150)")
-                    .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
-
-                entity.Property(e => e.Password)
-                    .HasColumnType("varchar(350)")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
@@ -333,11 +366,15 @@ namespace Visit.DataAccess.EntityFramework
 
                 entity.Property(e => e.FkFollowUserId)
                     .HasColumnName("FK_Follow_UserId")
-                    .HasColumnType("int(11)");
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.Property(e => e.FkMainUserId)
                     .HasColumnName("FK_Main_UserId")
-                    .HasColumnType("int(11)");
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.HasOne(d => d.FkFollowUser)
                     .WithMany(p => p.UserFollowingFkFollowUser)
@@ -364,13 +401,20 @@ namespace Visit.DataAccess.EntityFramework
                     .HasColumnName("User_LocationId")
                     .HasColumnType("int(11)");
 
+                entity.Property(e => e.City)
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
+
                 entity.Property(e => e.FkLocationId)
                     .HasColumnName("FK_LocationId")
                     .HasColumnType("int(11)");
 
                 entity.Property(e => e.FkUserId)
                     .HasColumnName("FK_UserId")
-                    .HasColumnType("int(11)");
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.Property(e => e.Status)
                     .HasColumnType("varchar(500)")
@@ -405,11 +449,15 @@ namespace Visit.DataAccess.EntityFramework
 
                 entity.Property(e => e.FkRecieverUserId)
                     .HasColumnName("FK_Reciever_UserId")
-                    .HasColumnType("int(11)");
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.Property(e => e.FkSenderUserId)
                     .HasColumnName("FK_Sender_UserId")
-                    .HasColumnType("int(11)");
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
 
                 entity.Property(e => e.MessageContent)
                     .HasColumnType("varchar(5000)")

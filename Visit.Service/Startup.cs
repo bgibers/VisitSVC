@@ -49,6 +49,7 @@ namespace Visit.Service
             
             // AWS
             services.AddCognitoIdentity();
+            
             services.AddAuthentication("Bearer")
                 .AddJwtBearer(options =>
                 {
@@ -61,6 +62,7 @@ namespace Visit.Service
             // Services and BL
             services.AddScoped<PostTestDataService>();
             services.AddTransient<IBlobStorageBusinessLogic, BlobStorageBusinessLogic>();
+            services.AddTransient<IAccountsBusinessLogic, AccountsBusinessLogic>();
 
             // Cors policy
             services.AddCors(options =>

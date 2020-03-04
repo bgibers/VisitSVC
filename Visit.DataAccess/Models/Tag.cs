@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Visit.DataAccess.Models
 {
@@ -11,7 +10,6 @@ namespace Visit.DataAccess.Models
             PostTag = new HashSet<PostTag>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int TagId { get; set; }
         public string Tag1 { get; set; }
 

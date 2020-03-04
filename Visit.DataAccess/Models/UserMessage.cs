@@ -1,14 +1,12 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Visit.DataAccess.Models
 {
     public partial class UserMessage
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserMessageId { get; set; }
-        public int? FkSenderUserId { get; set; }
-        public int? FkRecieverUserId { get; set; }
+        public string FkSenderUserId { get; set; }
+        public string FkRecieverUserId { get; set; }
         public string MessageContent { get; set; }
         public DateTime? MessageSentTime { get; set; }
 

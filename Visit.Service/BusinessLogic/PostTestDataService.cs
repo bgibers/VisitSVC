@@ -17,18 +17,17 @@ namespace Visit.Service.BusinessLogic
             _visitContext = visitContext;
         }
 
-        public async Task<List<int>> CreateUsers()
+        public async Task<List<string>> CreateUsers()
         {
             try
             {
                 User testUser1 = new User()
                 {
-                    UserId = 1,
+                    UserId = "1",
                     Avi = "sometesturl",
                     Birthday = DateTime.Today,
                     Email = "testuser1@gmail.com",
                     Username = "TestUser1",
-                    Password = "TestUser1",
                     Firstname = "TestUser1",
                     FkBirthLocation = _visitContext.Location.First(l => l.LocationCode == "US-MA"),
                     FkResidenceLocation = _visitContext.Location.First(l => l.LocationCode == "US-SC"),
@@ -37,12 +36,11 @@ namespace Visit.Service.BusinessLogic
                 };
                 User testUser2 = new User()
                 {
-                    UserId = 2,
+                    UserId = "2",
                     Avi = "sometesturl",
                     Birthday = DateTime.Today,
                     Email = "testuser2@gmail.com",
                     Username = "TestUser2",
-                    Password = "TestUser2",
                     Firstname = "TestUser2",
                     FkBirthLocation = _visitContext.Location.First(l => l.LocationCode == "US-NC"),
                     FkResidenceLocation = _visitContext.Location.First(l => l.LocationCode == "US-FL"),
@@ -57,11 +55,11 @@ namespace Visit.Service.BusinessLogic
 
 
                 await _visitContext.SaveChangesAsync();
-                return new List<int>() {testUser1.UserId, testUser2.UserId};
+                return new List<string>() {testUser1.UserId, testUser2.UserId};
             }
             catch (Exception e)
             {
-                return new List<int>();
+                return new List<string>();
             }
         }
 
@@ -119,7 +117,7 @@ namespace Visit.Service.BusinessLogic
                 .ToListAsync();
         }
         
-        public async Task<User> GetUser(int id)
+        public async Task<User> GetUser(string id)
         {
             return await _visitContext.User
                 .Include(u => u.UserLocation)

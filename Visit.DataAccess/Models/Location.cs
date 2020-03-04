@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Visit.DataAccess.Models
 {
@@ -12,7 +11,6 @@ namespace Visit.DataAccess.Models
             UserLocation = new HashSet<UserLocation>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int LocationId { get; set; }
         public string LocationCode { get; set; }
         public string LocationName { get; set; }

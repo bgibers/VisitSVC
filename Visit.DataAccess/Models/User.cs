@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Visit.DataAccess.Models
 {
@@ -8,6 +7,7 @@ namespace Visit.DataAccess.Models
     {
         public User()
         {
+            Like = new HashSet<Like>();
             Post = new HashSet<Post>();
             PostComment = new HashSet<PostComment>();
             UserFollowingFkFollowUser = new HashSet<UserFollowing>();
@@ -17,11 +17,9 @@ namespace Visit.DataAccess.Models
             UserMessageFkSenderUser = new HashSet<UserMessage>();
         }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int UserId { get; set; }
+        public string UserId { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
-        public string Password { get; set; }
         public string Firstname { get; set; }
         public string Lastname { get; set; }
         public DateTime? Birthday { get; set; }
@@ -31,6 +29,7 @@ namespace Visit.DataAccess.Models
 
         public virtual Location FkBirthLocation { get; set; }
         public virtual Location FkResidenceLocation { get; set; }
+        public virtual ICollection<Like> Like { get; set; }
         public virtual ICollection<Post> Post { get; set; }
         public virtual ICollection<PostComment> PostComment { get; set; }
         public virtual ICollection<UserFollowing> UserFollowingFkFollowUser { get; set; }

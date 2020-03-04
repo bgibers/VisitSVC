@@ -25,8 +25,8 @@ namespace Visit.Service.ApiControllers
         }
 
         [HttpPost("post")]
-        [ProducesResponseType(typeof(int),200)]
-        public async Task<ActionResult<int>> PostTest()
+        [ProducesResponseType(typeof(string),200)]
+        public async Task<IActionResult> PostTest()
         {
             return new ObjectResult(await _dataService.CreateUsers());
         }

@@ -44,7 +44,7 @@ namespace Visit.Service.ApiControllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<IActionResult> PutUser(string id, User user)
         {
             if (id != user.UserId)
             {
@@ -86,7 +86,7 @@ namespace Visit.Service.ApiControllers
 
         // DELETE: api/User/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<User>> DeleteUser(int id)
+        public async Task<ActionResult<User>> DeleteUser(string id)
         {
             var user = await _context.User.FindAsync(id);
             if (user == null)
@@ -100,7 +100,7 @@ namespace Visit.Service.ApiControllers
             return user;
         }
 
-        private bool UserExists(int id)
+        private bool UserExists(string id)
         {
             return _context.User.Any(e => e.UserId == id);
         }

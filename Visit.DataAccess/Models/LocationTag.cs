@@ -1,10 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace Visit.DataAccess.Models
+﻿namespace Visit.DataAccess.Models
 {
     public partial class LocationTag
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int LocationTagId { get; set; }
         public int? FkUserLocationId { get; set; }
         public int? FkTagId { get; set; }
