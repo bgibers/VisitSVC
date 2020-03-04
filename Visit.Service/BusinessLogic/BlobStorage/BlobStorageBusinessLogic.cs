@@ -7,10 +7,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
-using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Config;
 
-namespace Visit.Service.BusinessLogic
+namespace Visit.Service.BusinessLogic.BlobStorage
 {
     public class BlobStorageBusinessLogic : IBlobStorageBusinessLogic
     {

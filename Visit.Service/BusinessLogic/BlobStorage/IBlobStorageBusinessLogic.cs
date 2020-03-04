@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Visit.Service.BusinessLogic.Interfaces
+namespace Visit.Service.BusinessLogic.BlobStorage
 {
     public interface IBlobStorageBusinessLogic
     {

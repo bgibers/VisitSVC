@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using Visit.DataAccess;
 using Visit.DataAccess.EntityFramework;
 using Visit.Service.BusinessLogic;
+using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Config;
 
@@ -45,10 +45,6 @@ namespace Visit.Service
             
             // Map settings
             services.Configure<BlobConfig>(Configuration.GetSection("BlobStorageAcct"));
-            services.Configure<CognitoConfig>(Configuration.GetSection("AWS"));
-            
-            // AWS
-            services.AddCognitoIdentity();
             
             services.AddAuthentication("Bearer")
                 .AddJwtBearer(options =>
