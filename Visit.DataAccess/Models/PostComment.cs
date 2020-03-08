@@ -2,7 +2,7 @@
 
 namespace Visit.DataAccess.Models
 {
-    public partial class PostComment
+    public class PostComment
     {
         public int PostCommentId { get; set; }
         public string FkUserIdOfCommenting { get; set; }

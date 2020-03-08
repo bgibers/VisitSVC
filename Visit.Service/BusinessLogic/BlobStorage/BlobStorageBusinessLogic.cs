@@ -15,7 +15,7 @@ namespace Visit.Service.BusinessLogic.BlobStorage
     {
         private readonly IOptions<BlobConfig> _config;
         private readonly ILogger<BlobStorageBusinessLogic> _logger;
-        
+
         public BlobStorageBusinessLogic(IOptions<BlobConfig> config, ILogger<BlobStorageBusinessLogic> logger)
         {
             _config = config;
@@ -24,39 +24,38 @@ namespace Visit.Service.BusinessLogic.BlobStorage
 
         public async Task<List<string>> ListFiles()
         {
-            List<string> blobs = new List<string>();
+            var blobs = new List<string>();
             try
             {
                 if (CloudStorageAccount.TryParse(_config.Value.StorageConnection,
-                    out CloudStorageAccount storageAccount))
+                    out var storageAccount))
                 {
-                    CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+                    var blobClient = storageAccount.CreateCloudBlobClient();
 
-                    CloudBlobContainer container = blobClient.GetContainerReference(_config.Value.Container);
+                    var container = blobClient.GetContainerReference(_config.Value.Container);
 
-                    BlobResultSegment resultSegment = await container.ListBlobsSegmentedAsync(null);
-                    foreach (IListBlobItem item in resultSegment.Results)
-                    {
+                    var resultSegment = await container.ListBlobsSegmentedAsync(null);
+                    foreach (var item in resultSegment.Results)
                         if (item.GetType() == typeof(CloudBlockBlob))
                         {
-                            CloudBlockBlob blob = (CloudBlockBlob) item;
+                            var blob = (CloudBlockBlob) item;
                             blobs.Add(blob.Name);
                         }
                         else if (item.GetType() == typeof(CloudPageBlob))
                         {
-                            CloudPageBlob blob = (CloudPageBlob) item;
+                            var blob = (CloudPageBlob) item;
                             blobs.Add(blob.Name);
                         }
                         else if (item.GetType() == typeof(CloudBlobDirectory))
                         {
-                            CloudBlobDirectory dir = (CloudBlobDirectory) item;
+                            var dir = (CloudBlobDirectory) item;
                             blobs.Add(dir.Uri.ToString());
                         }
-                    }
                 }
+
                 _logger.LogCritical("Can't read Blob Storage connection from config");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
             }
@@ -69,25 +68,26 @@ namespace Visit.Service.BusinessLogic.BlobStorage
             try
             {
                 if (CloudStorageAccount.TryParse(_config.Value.StorageConnection,
-                    out CloudStorageAccount storageAccount))
+                    out var storageAccount))
                 {
-                    CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+                    var blobClient = storageAccount.CreateCloudBlobClient();
 
-                    CloudBlobContainer container = blobClient.GetContainerReference(_config.Value.Container);
+                    var container = blobClient.GetContainerReference(_config.Value.Container);
 
-                    CloudBlockBlob blockBlob = container.GetBlockBlobReference(fileName);
-    
+                    var blockBlob = container.GetBlockBlobReference(fileName);
+
                     await blockBlob.UploadFromStreamAsync(asset.OpenReadStream());
 
                     return true;
                 }
+
                 _logger.LogCritical("Can't read Blob Storage connection from config");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e.ToString());
             }
-            
+
             return false;
         }
 
@@ -95,18 +95,18 @@ namespace Visit.Service.BusinessLogic.BlobStorage
         {
             try
             {
-                MemoryStream ms = new MemoryStream();
-                
+                var ms = new MemoryStream();
+
                 if (CloudStorageAccount.TryParse(_config.Value.StorageConnection,
-                    out CloudStorageAccount storageAccount))
+                    out var storageAccount))
                 {
-                    CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-                    CloudBlobContainer container = blobClient.GetContainerReference(_config.Value.Container);
+                    var blobClient = storageAccount.CreateCloudBlobClient();
+                    var container = blobClient.GetContainerReference(_config.Value.Container);
                     if (await container.ExistsAsync())
                     {
-                        CloudBlob file = container.GetBlobReference(fileName);
+                        var file = container.GetBlobReference(fileName);
                         await file.FetchAttributesAsync();
-                        byte[] arr = new byte[file.Properties.Length];
+                        var arr = new byte[file.Properties.Length];
                         await file.DownloadToByteArrayAsync(arr, 0);
                         var fileBase64 = Convert.ToBase64String(arr);
                         return fileBase64;
@@ -114,34 +114,32 @@ namespace Visit.Service.BusinessLogic.BlobStorage
 
                     _logger.LogCritical(new StorageException("Container does not exist").ToString());
                 }
-                _logger.LogCritical("Can't read Blob Storage connection from config");
 
+                _logger.LogCritical("Can't read Blob Storage connection from config");
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
             }
+
             return null;
         }
-        
+
         public async Task<bool> DeleteFile(string fileName)
         {
             try
             {
                 if (CloudStorageAccount.TryParse(_config.Value.StorageConnection,
-                    out CloudStorageAccount storageAccount))
+                    out var storageAccount))
                 {
-                    CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-                    CloudBlobContainer container = blobClient.GetContainerReference(_config.Value.Container);
+                    var blobClient = storageAccount.CreateCloudBlobClient();
+                    var container = blobClient.GetContainerReference(_config.Value.Container);
 
                     if (await container.ExistsAsync())
                     {
-                        CloudBlob file = container.GetBlobReference(fileName);
+                        var file = container.GetBlobReference(fileName);
 
-                        if (await file.ExistsAsync())
-                        {
-                            await file.DeleteAsync();
-                        }
+                        if (await file.ExistsAsync()) await file.DeleteAsync();
                     }
                     else
                     {

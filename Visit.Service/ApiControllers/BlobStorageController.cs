@@ -3,14 +3,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Visit.Service.BusinessLogic.BlobStorage;
-using Visit.Service.BusinessLogic.Interfaces;
 
 namespace Visit.Service.ApiControllers
 {
-    
     // TODO change method of getting file?
-    
-    
+
+
     [Route("storage")]
     [ApiController]
     public class BlobStorageController : ControllerBase
@@ -19,11 +17,11 @@ namespace Visit.Service.ApiControllers
 
         public BlobStorageController(IBlobStorageBusinessLogic blobStorageBusinessLogic)
         {
-            this._blobStorageBusinessLogic = blobStorageBusinessLogic;
+            _blobStorageBusinessLogic = blobStorageBusinessLogic;
         }
 
         [HttpGet("ListFiles")]
-        [ProducesResponseType(typeof(List<string>),200)]
+        [ProducesResponseType(typeof(List<string>), 200)]
         public async Task<List<string>> ListFiles()
         {
             return await _blobStorageBusinessLogic.ListFiles();
@@ -34,9 +32,9 @@ namespace Visit.Service.ApiControllers
         {
             return Ok(await _blobStorageBusinessLogic.UploadFile(fileName, asset));
         }
-        
+
         [HttpGet("DownloadFile/{fileName}")]
-        [ProducesResponseType(typeof(string),200)]
+        [ProducesResponseType(typeof(string), 200)]
         public async Task<string> DownloadFile(string fileName)
         {
             return await _blobStorageBusinessLogic.GetFileByName(fileName);

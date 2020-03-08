@@ -2,7 +2,7 @@
 
 namespace Visit.DataAccess.Models
 {
-    public partial class Tag
+    public class Tag
     {
         public Tag()
         {

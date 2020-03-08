@@ -2,7 +2,7 @@
 
 namespace Visit.DataAccess.Models
 {
-    public partial class Post
+    public class Post
     {
         public Post()
         {

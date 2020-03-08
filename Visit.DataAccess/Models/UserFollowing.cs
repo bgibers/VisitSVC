@@ -2,7 +2,7 @@
 
 namespace Visit.DataAccess.Models
 {
-    public partial class UserFollowing
+    public class UserFollowing
     {
         public int UserFollowingId { get; set; }
         public string FkMainUserId { get; set; }

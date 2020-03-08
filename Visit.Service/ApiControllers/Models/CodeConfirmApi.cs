@@ -8,8 +8,6 @@ namespace Visit.Service.ApiControllers.Models
         [EmailAddress(ErrorMessage = "Invalid email")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Required")]
-        public string Code { get; set; }
-
+        [Required(ErrorMessage = "Required")] public string Code { get; set; }
     }
 }

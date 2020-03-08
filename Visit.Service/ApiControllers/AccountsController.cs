@@ -1,42 +1,35 @@
-using System.Linq;
 using System.Threading.Tasks;
-using Amazon.AspNetCore.Identity.Cognito;
-using Amazon.Extensions.CognitoAuthentication;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Visit.DataAccess.Models;
 using Visit.Service.ApiControllers.Models;
-using Visit.Service.ApiControllers.Models.Enums;
 using Visit.Service.BusinessLogic.Interfaces;
 
 namespace Visit.Service.ApiControllers
 {
-
     [Route("account")]
     public class AccountsController : ControllerBase
     {
-        private readonly IAccountsBusinessLogic _accountsBusinessLogic;
+        private readonly IAccountsService _accountsService;
 
-        public AccountsController(IAccountsBusinessLogic accountsBusinessLogic)
+        public AccountsController(IAccountsService accountsService)
         {
-            _accountsBusinessLogic = accountsBusinessLogic;
+            _accountsService = accountsService;
         }
 
         [HttpPost("register")]
-        [ProducesResponseType(typeof(User),200)]
-        public async Task<IActionResult> Register([FromBody]RegisterModelApi modelApi)
+        [ProducesResponseType(typeof(User), 200)]
+        public async Task<IActionResult> Register([FromBody] RegisterModelApi modelApi)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            
-            var user = await _accountsBusinessLogic.RegisterUser(modelApi);
-            
+
+            var user = await _accountsService.RegisterUser(modelApi);
+
             if (user == null)
             {
                 ModelState.AddModelError("UserExists", "Username or email already registered");
                 return BadRequest(ModelState);
             }
-            
+
             return Ok(user);
         }
 
@@ -129,7 +122,5 @@ namespace Visit.Service.ApiControllers
 //
 //            return BadRequest(ModelState);
 //        }
-
-
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Visit.DataAccess.Models
 {
-    public partial class PostType
+    public class PostType
     {
         public PostType()
         {

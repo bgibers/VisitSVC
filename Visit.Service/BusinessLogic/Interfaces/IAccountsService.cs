@@ -5,7 +5,7 @@ using Visit.Service.ApiControllers.Models.Enums;
 
 namespace Visit.Service.BusinessLogic.Interfaces
 {
-    public interface IAccountsBusinessLogic
+    public interface IAccountsService
     {
         Task<User> RegisterUser(RegisterModelApi model);
         Task<CodeConfirmResult> ConfirmRegister(CodeConfirmApi model);

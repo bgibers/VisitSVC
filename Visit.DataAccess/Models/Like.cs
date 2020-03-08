@@ -1,6 +1,6 @@
 ﻿namespace Visit.DataAccess.Models
 {
-    public partial class Like
+    public class Like
     {
         public int LikeId { get; set; }
         public int FkPostId { get; set; }

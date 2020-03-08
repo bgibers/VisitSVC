@@ -1,6 +1,6 @@
 ﻿namespace Visit.DataAccess.Models
 {
-    public partial class LocationTag
+    public class LocationTag
     {
         public int LocationTagId { get; set; }
         public int? FkUserLocationId { get; set; }
