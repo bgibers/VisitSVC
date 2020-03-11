@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Visit.DataAccess.Models;
-using Visit.Service.ApiControllers.Models;
 using Visit.Service.BusinessLogic.Interfaces;
+using Visit.Service.Models;
 
 namespace Visit.Service.ApiControllers
 {
@@ -17,8 +17,25 @@ namespace Visit.Service.ApiControllers
         }
 
         [HttpPost("register")]
-        [ProducesResponseType(typeof(User), 200)]
+        [ProducesResponseType(typeof(UserApi), 200)]
         public async Task<IActionResult> Register([FromBody] RegisterModelApi modelApi)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var user = await _accountsService.RegisterUser(modelApi);
+
+            if (user == null)
+            {
+                ModelState.AddModelError("UserExists", "Username or email already registered");
+                return BadRequest(ModelState);
+            }
+
+            return Ok(user);
+        }
+        
+        [HttpPost("login")]
+        [ProducesResponseType(typeof(UserApi), 200)]
+        public async Task<IActionResult> Login([FromBody] RegisterModelApi modelApi)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 

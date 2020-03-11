@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Visit.Service.ApiControllers.Models
+namespace Visit.Service.Models
 {
     public class ResetPasswordRequestApi
     {

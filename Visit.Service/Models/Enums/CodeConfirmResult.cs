@@ -1,4 +1,4 @@
-namespace Visit.Service.ApiControllers.Models.Enums
+namespace Visit.Service.Models.Enums
 {
     public enum CodeConfirmResult
     {

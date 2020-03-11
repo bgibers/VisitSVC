@@ -468,7 +468,7 @@ namespace Visit.DataAccess.EntityFramework
             OnModelCreatingPartial(modelBuilder);
         }
 
-        protected void OnModelCreatingPartial(ModelBuilder modelBuilder)
+        private void OnModelCreatingPartial(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
         }
