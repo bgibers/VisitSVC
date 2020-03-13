@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using Visit.DataAccess.Models;
 
-namespace Visit.Service.Models
+namespace Visit.Service.Models.Responses
 {
-    public class UserApi
+    public class UserResponse
     {
+        public string UserId { get; set; }
         public string Firstname { get; set; }
         public string Lastname { get; set; }
         public string Username { get; set; }

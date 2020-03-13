@@ -6,7 +6,9 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAzure.Storage;
 using Newtonsoft.Json;
 using Visit.DataAccess.Auth;
@@ -17,6 +19,8 @@ using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models;
 using Visit.Service.Models.Enums;
+using Visit.Service.Models.Requests;
+using Visit.Service.Models.Responses;
 
 namespace Visit.Service.BusinessLogic
 {
@@ -31,38 +35,42 @@ namespace Visit.Service.BusinessLogic
         private readonly IBlobStorageBusinessLogic _blobStorage;
 
         public AccountsService(ILogger<AccountsService> logger, IMapper mapper, IJwtFactory jwtFactory, 
-            JwtIssuerOptions jwtOptions, VisitContext visitContext, 
+            IOptions<JwtIssuerOptions> jwtOptions, VisitContext visitContext, 
             UserManager<User> userManager, IBlobStorageBusinessLogic blobStorage)
         {
             _logger = logger;
             _mapper = mapper;
             _jwtFactory = jwtFactory;
-            _jwtOptions = jwtOptions;
+            _jwtOptions = jwtOptions.Value;
             _visitContext = visitContext;
             _userManager = userManager;
             _blobStorage = blobStorage;
         }
         
-        public async Task<UserApi> RegisterUser(RegisterModelApi model)
+        public async Task<CreateUserResponse> RegisterUser(RegisterRequest model)
         {
             var userIdentity = _mapper.Map<User>(model);
 
             var result = await _userManager.CreateAsync(userIdentity, model.Password);
-
-            // todo add image upload to controller and service
             
             if (!result.Succeeded)
             {
                 _logger.LogError($"Could not create user: {result.Errors}");
-                return null;
+                return new CreateUserResponse(null, false, result.Errors);
             }
 
             await _visitContext.SaveChangesAsync();
 
-            return _mapper.Map<UserApi>(userIdentity);
+            var token = await LoginUser(new LoginApiRequest()
+            {
+                UserName = model.Username,
+                Password = model.Password
+            });
+            
+            return new CreateUserResponse(token,true,null);
         }
         
-        public async Task<JwtToken> LoginUser(LoginApiModel credentials)
+        public async Task<JwtToken> LoginUser(LoginApiRequest credentials)
         {
             var identity = await GetClaimsIdentity(credentials.UserName, credentials.Password);
             
@@ -71,10 +79,9 @@ namespace Visit.Service.BusinessLogic
                 return null;
             }
             
-            var token = JsonConvert.DeserializeObject<JwtToken>(await Tokens.GenerateJwt(identity, _jwtFactory, identity.Name, _jwtOptions, 
+            return JsonConvert.DeserializeObject<JwtToken>(
+                await Tokens.GenerateJwt(identity, _jwtFactory, identity.Name, _jwtOptions, 
                 new JsonSerializerSettings { Formatting = Formatting.Indented }));
-            
-            return token;
         }
         
         private async Task<ClaimsIdentity> GetClaimsIdentity(string userName, string password)
@@ -138,7 +145,7 @@ namespace Visit.Service.BusinessLogic
             }
         }
         
-        public async Task<IdentityResult> UploadProfileImage(IFormFile image, Claim user)
+        public async Task<IdentityResult> UpdateProfileImage(IFormFile image, Claim user)
         {
             var currentUser = await _userManager.FindByNameAsync(user.Value);
 
@@ -152,22 +159,22 @@ namespace Visit.Service.BusinessLogic
             return await _userManager.UpdateAsync(currentUser);
         }
         
-        public async Task<CodeConfirmResult> ConfirmRegister(CodeConfirmApi model)
+        public async Task<CodeConfirmResult> ConfirmRegister(CodeConfirmRequest model)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> ChangePassword(ChangePasswordApi model)
+        public async Task<bool> ChangePassword(ChangePasswordRequest model)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> ForgotPassword(ResetPasswordRequestApi model)
+        public async Task<bool> ForgotPassword(ResetPasswordRequest model)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<CodeConfirmResult> ConfirmPasswordReset(ResetPasswordApi model)
+        public async Task<CodeConfirmResult> ConfirmPasswordReset(SetNewPasswordWithCodeRequest model)
         {
             throw new NotImplementedException();
         }

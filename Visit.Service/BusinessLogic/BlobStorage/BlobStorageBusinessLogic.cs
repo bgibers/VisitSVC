@@ -63,7 +63,7 @@ namespace Visit.Service.BusinessLogic.BlobStorage
             return blobs;
         }
 
-        public async Task<bool> UploadFile(string fileName, IFormFile asset)
+        public async Task<bool> UploadFile(string userId, IFormFile asset)
         {
             try
             {
@@ -74,8 +74,8 @@ namespace Visit.Service.BusinessLogic.BlobStorage
 
                     var container = blobClient.GetContainerReference(_config.Value.Container);
 
-                    var blockBlob = container.GetBlockBlobReference(fileName);
-
+                    // creates the blob if it doesn't already exist, and overwrites it if it does.
+                    var blockBlob = await container.GetBlobReferenceFromServerAsync($"{userId}/{asset.FileName}");
                     await blockBlob.UploadFromStreamAsync(asset.OpenReadStream());
 
                     return true;
@@ -89,6 +89,11 @@ namespace Visit.Service.BusinessLogic.BlobStorage
             }
 
             return false;
+        }
+
+        public async Task<List<string>> ListDirectoryFiles(string directory)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<string> GetFileByName(string fileName)

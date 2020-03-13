@@ -38,7 +38,10 @@ namespace Visit.Service
         {
             // Config, DB, and swagger
             services.AddSingleton(Configuration);
-            services.AddControllers();
+            services.AddControllers()   
+                .AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
             services.AddOpenApiDocument();
             services.AddDbContext<VisitContext>(
                 options => options.UseMySql(Configuration.GetConnectionString("MySql"),

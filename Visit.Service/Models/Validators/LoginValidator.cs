@@ -1,8 +1,9 @@
 using FluentValidation;
+using Visit.Service.Models.Requests;
 
 namespace Visit.Service.Models.Validators
 {
-    public class LoginValidator : AbstractValidator<LoginApiModel>
+    public class LoginValidator : AbstractValidator<LoginApiRequest>
     {
         public LoginValidator() 
         {

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic;
@@ -8,6 +9,7 @@ namespace Visit.Service.ApiControllers
 {
     [Route("api/TestData")]
     [ApiController]
+    //[Authorize(Policy = "VisitUser")]
     public class PostTestDataController
     {
         private readonly PostTestDataService _dataService;
