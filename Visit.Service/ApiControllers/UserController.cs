@@ -32,10 +32,7 @@ namespace Visit.Service.ApiControllers
         {
             var user = await _context.User.FindAsync(id);
 
-            if (user == null)
-            {
-                return NotFound();
-            }
+            if (user == null) return NotFound();
 
             return user;
         }
@@ -46,10 +43,7 @@ namespace Visit.Service.ApiControllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(string id, User user)
         {
-            if (id != user.UserId)
-            {
-                return BadRequest();
-            }
+            if (id != user.Id) return BadRequest();
 
             _context.Entry(user).State = EntityState.Modified;
 
@@ -60,13 +54,8 @@ namespace Visit.Service.ApiControllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!UserExists(id))
-                {
                     return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return NoContent();
@@ -81,7 +70,7 @@ namespace Visit.Service.ApiControllers
             _context.User.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = user.UserId }, user);
+            return CreatedAtAction("GetUser", new {id = user.Id}, user);
         }
 
         // DELETE: api/User/5
@@ -89,10 +78,7 @@ namespace Visit.Service.ApiControllers
         public async Task<ActionResult<User>> DeleteUser(string id)
         {
             var user = await _context.User.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
+            if (user == null) return NotFound();
 
             _context.User.Remove(user);
             await _context.SaveChangesAsync();
@@ -102,7 +88,7 @@ namespace Visit.Service.ApiControllers
 
         private bool UserExists(string id)
         {
-            return _context.User.Any(e => e.UserId == id);
+            return _context.User.Any(e => e.Id == id);
         }
     }
 }

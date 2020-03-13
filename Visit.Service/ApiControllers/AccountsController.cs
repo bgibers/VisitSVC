@@ -1,48 +1,52 @@
-using System.Linq;
 using System.Threading.Tasks;
-using Amazon.AspNetCore.Identity.Cognito;
-using Amazon.Extensions.CognitoAuthentication;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Visit.DataAccess.Auth;
 using Visit.DataAccess.Models;
-using Visit.Service.ApiControllers.Models;
-using Visit.Service.ApiControllers.Models.Enums;
 using Visit.Service.BusinessLogic.Interfaces;
+using Visit.Service.Models;
+using Visit.Service.Models.Requests;
 
 namespace Visit.Service.ApiControllers
 {
-
     [Route("account")]
     public class AccountsController : ControllerBase
     {
-        private readonly IAccountsBusinessLogic _accountsBusinessLogic;
+        private readonly IAccountsService _accountsService;
 
-        public AccountsController(IAccountsBusinessLogic accountsBusinessLogic)
+        public AccountsController(IAccountsService accountsService)
         {
-            _accountsBusinessLogic = accountsBusinessLogic;
+            _accountsService = accountsService;
         }
 
         [HttpPost("register")]
-        [ProducesResponseType(typeof(User),200)]
-        public async Task<IActionResult> Register([FromBody]RegisterModelApi modelApi)
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<JwtToken>> Register([FromBody] RegisterRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            
-            var user = await _accountsBusinessLogic.RegisterUser(modelApi);
-            
-            if (user == null)
+
+            var response = await _accountsService.RegisterUser(request);
+
+            if (!response.Success)
             {
-                ModelState.AddModelError("UserExists", "Username or email already registered");
-                return BadRequest(ModelState);
+                return BadRequest(response.Errors);
             }
-            
-            return Ok(user);
+
+            return response.JwtToken;
+        }
+        
+        [HttpPost("login")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<JwtToken>> Login([FromBody] LoginApiRequest requestApi)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            return await _accountsService.LoginUser(requestApi);
         }
 
 //        [HttpPost("confirm")]
 //        [ProducesResponseType(typeof(CodeConfirmResult),200)]
-//        public async Task<IActionResult> ConfirmRegister([FromBody]CodeConfirmApi api)
+//        public async Task<IActionResult> ConfirmRegister([FromBody]CodeConfirmRequest api)
 //        {
 //
 //            if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -70,7 +74,7 @@ namespace Visit.Service.ApiControllers
 //        // https://github.com/aws/aws-aspnet-cognito-identity-provider/blob/master/docs/5-User%20Management%20-%20Change%20and%20reset%20passwords.md
 //        [HttpPost("password/change")]
 //        [ProducesResponseType(typeof(bool),200)]
-//        public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordApi model)
+//        public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordRequest model)
 //        {
 //            if (!ModelState.IsValid) return BadRequest(ModelState);
 //
@@ -88,7 +92,7 @@ namespace Visit.Service.ApiControllers
 //
 //        [HttpPost("password/forgot")]
 //        [ProducesResponseType(typeof(bool),200)]
-//        public async Task<IActionResult> ForgotPassword([FromBody]ResetPasswordRequestApi model)
+//        public async Task<IActionResult> ForgotPassword([FromBody]ResetPasswordRequest model)
 //        {
 //            if (!ModelState.IsValid) return BadRequest(ModelState);
 //            
@@ -107,7 +111,7 @@ namespace Visit.Service.ApiControllers
 //
 //        [HttpPost("password/confirmreset")]
 //        [ProducesResponseType(typeof(CodeConfirmResult),200)]
-//        public async Task<IActionResult> ConfirmResetPassword([FromBody]ResetPasswordApi model)
+//        public async Task<IActionResult> ConfirmResetPassword([FromBody]SetNewPasswordWithCodeRequest model)
 //        {
 //
 //            if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -129,7 +133,5 @@ namespace Visit.Service.ApiControllers
 //
 //            return BadRequest(ModelState);
 //        }
-
-
     }
 }

@@ -32,10 +32,7 @@ namespace Visit.Service.ApiControllers
         {
             var userLocation = await _context.UserLocation.FindAsync(id);
 
-            if (userLocation == null)
-            {
-                return NotFound();
-            }
+            if (userLocation == null) return NotFound();
 
             return userLocation;
         }
@@ -46,10 +43,7 @@ namespace Visit.Service.ApiControllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUserLocation(int id, UserLocation userLocation)
         {
-            if (id != userLocation.UserLocationId)
-            {
-                return BadRequest();
-            }
+            if (id != userLocation.UserLocationId) return BadRequest();
 
             _context.Entry(userLocation).State = EntityState.Modified;
 
@@ -60,13 +54,8 @@ namespace Visit.Service.ApiControllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!UserLocationExists(id))
-                {
                     return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return NoContent();
@@ -79,7 +68,7 @@ namespace Visit.Service.ApiControllers
             _context.UserLocation.Add(userLocation);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUserLocation", new { id = userLocation.UserLocationId }, userLocation);
+            return CreatedAtAction("GetUserLocation", new {id = userLocation.UserLocationId}, userLocation);
         }
 
         // DELETE: api/UserLocation/5
@@ -87,10 +76,7 @@ namespace Visit.Service.ApiControllers
         public async Task<ActionResult<UserLocation>> DeleteUserLocation(int id)
         {
             var userLocation = await _context.UserLocation.FindAsync(id);
-            if (userLocation == null)
-            {
-                return NotFound();
-            }
+            if (userLocation == null) return NotFound();
 
             _context.UserLocation.Remove(userLocation);
             await _context.SaveChangesAsync();

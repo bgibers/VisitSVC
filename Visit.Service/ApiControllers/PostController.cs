@@ -32,10 +32,7 @@ namespace Visit.Service.ApiControllers
         {
             var post = await _context.Post.FindAsync(id);
 
-            if (post == null)
-            {
-                return NotFound();
-            }
+            if (post == null) return NotFound();
 
             return post;
         }
@@ -46,10 +43,7 @@ namespace Visit.Service.ApiControllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPost(int id, Post post)
         {
-            if (id != post.PostId)
-            {
-                return BadRequest();
-            }
+            if (id != post.PostId) return BadRequest();
 
             _context.Entry(post).State = EntityState.Modified;
 
@@ -60,13 +54,8 @@ namespace Visit.Service.ApiControllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!PostExists(id))
-                {
                     return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return NoContent();
@@ -81,7 +70,7 @@ namespace Visit.Service.ApiControllers
             _context.Post.Add(post);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetPost", new { id = post.PostId }, post);
+            return CreatedAtAction("GetPost", new {id = post.PostId}, post);
         }
 
         // DELETE: api/Post/5
@@ -89,10 +78,7 @@ namespace Visit.Service.ApiControllers
         public async Task<ActionResult<Post>> DeletePost(int id)
         {
             var post = await _context.Post.FindAsync(id);
-            if (post == null)
-            {
-                return NotFound();
-            }
+            if (post == null) return NotFound();
 
             _context.Post.Remove(post);
             await _context.SaveChangesAsync();

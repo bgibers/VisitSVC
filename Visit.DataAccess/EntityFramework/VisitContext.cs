@@ -1,17 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Visit.DataAccess.Models;
 
 namespace Visit.DataAccess.EntityFramework
 {
-    public partial class VisitContext : DbContext
+    public class VisitContext : IdentityDbContext<User>
     {
-        public VisitContext()
+        private readonly IConfiguration _configuration;
+        
+        public VisitContext(IConfiguration configuration)
         {
+            _configuration = configuration;
         }
 
-        public VisitContext(DbContextOptions<VisitContext> options)
+        public VisitContext(DbContextOptions<VisitContext> options, IConfiguration configuration)
             : base(options)
         {
+            _configuration = configuration;
         }
 
         public virtual DbSet<Like> Like { get; set; }
@@ -32,8 +38,7 @@ namespace Visit.DataAccess.EntityFramework
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseMySql("server=localhost;port=1521;user=VisitDBA;password=Clemson17;database=VisitV2", x => x.ServerVersion("8.0.17-mysql"));
+                optionsBuilder.UseMySql(_configuration.GetConnectionString("MySql"), x => x.ServerVersion("8.0.17-mysql"));
             }
         }
 
@@ -305,18 +310,8 @@ namespace Visit.DataAccess.EntityFramework
                 entity.HasIndex(e => e.FkResidenceLocationId)
                     .HasName("FK_ResidenceLocationId");
 
-                entity.Property(e => e.UserId)
-                    .HasColumnType("varchar(255)")
-                    .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
-
                 entity.Property(e => e.Avi)
                     .HasColumnType("varchar(150)")
-                    .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
-
-                entity.Property(e => e.Email)
-                    .HasColumnType("varchar(50)")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
@@ -334,11 +329,6 @@ namespace Visit.DataAccess.EntityFramework
                     .HasColumnType("int(11)");
 
                 entity.Property(e => e.Lastname)
-                    .HasColumnType("varchar(150)")
-                    .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
-
-                entity.Property(e => e.Username)
                     .HasColumnType("varchar(150)")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
@@ -478,6 +468,9 @@ namespace Visit.DataAccess.EntityFramework
             OnModelCreatingPartial(modelBuilder);
         }
 
-        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+        private void OnModelCreatingPartial(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

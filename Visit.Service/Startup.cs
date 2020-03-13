@@ -1,17 +1,23 @@
 ﻿using System;
+using System.Text;
+using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using AutoMapper;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Visit.DataAccess.Auth;
+using Visit.DataAccess.Auth.Helpers;
 using Visit.DataAccess.EntityFramework;
+using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic;
 using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
@@ -32,33 +38,92 @@ namespace Visit.Service
         {
             // Config, DB, and swagger
             services.AddSingleton(Configuration);
-            services.AddControllers();
+            services.AddControllers()   
+                .AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
             services.AddOpenApiDocument();
-            services.AddDbContext<VisitContext>( 
-                options => options.UseMySql(Configuration.GetConnectionString("MySql"), 
+            services.AddDbContext<VisitContext>(
+                options => options.UseMySql(Configuration.GetConnectionString("MySql"),
                     mySqlOptions =>
                     {
-                        mySqlOptions.ServerVersion(new Version(5, 7, 17), ServerType.MySql);// replace with your Server Version and Type
+                        mySqlOptions.ServerVersion(new Version(5, 7, 17),
+                            ServerType.MySql); // replace with your Server Version and Type
                     }
                 ).EnableSensitiveDataLogging());
             services.AddAutoMapper(typeof(Startup));
-            
+
             // Map settings
             services.Configure<BlobConfig>(Configuration.GetSection("BlobStorageAcct"));
-            
-            services.AddAuthentication("Bearer")
-                .AddJwtBearer(options =>
-                {
-                    options.SaveToken = true;
-                    options.ClaimsIssuer = "VisitBackend";
-                    options.Audience = Configuration.GetSection("AWS")["UserPoolClientId"];
-                    options.Authority = $"https://cognito-idp.{Configuration.GetSection("AWS")["Region"]}.amazonaws.com/{Configuration.GetSection("AwsCognito")["UserPoolId"]}";
-                });
 
+            // Authentication
+            services.AddSingleton<IJwtFactory, JwtFactory>();
+            
+            var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
+            var signingKey = new SymmetricSecurityKey(
+                Encoding.ASCII.GetBytes(jwtAppSettingOptions[nameof(JwtIssuerOptions.SigningKey)]));
+            // Configure JwtIssuerOptions
+            services.Configure<JwtIssuerOptions>(options =>
+            {
+                options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
+                options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
+                options.SigningCredentials = new SigningCredentials(signingKey,
+                    SecurityAlgorithms.HmacSha256);
+            });
+            
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)],
+
+                ValidateAudience = true,
+                ValidAudience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)],
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = signingKey,
+
+                RequireExpirationTime = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(configureOptions =>
+            {
+                configureOptions.ClaimsIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
+                configureOptions.TokenValidationParameters = tokenValidationParameters;
+                configureOptions.SaveToken = true;
+            });
+
+            // api user claim policy
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("VisitUser", policy => 
+                    policy.RequireClaim(Constants.Strings.JwtClaimIdentifiers.Rol, Constants.Strings.JwtClaims.ApiAccess));
+            });
+            
+            var builder = services.AddIdentityCore<User>(o =>
+            {
+                o.User.RequireUniqueEmail = true;
+                
+                // configure identity options
+                o.Password.RequireDigit = true;
+                o.Password.RequireLowercase = true;
+                o.Password.RequireUppercase = true;
+                o.Password.RequireNonAlphanumeric = false;
+                o.Password.RequiredLength = 6;
+            });
+            builder = new IdentityBuilder(builder.UserType, typeof(IdentityRole), builder.Services);
+            builder.AddEntityFrameworkStores<VisitContext>().AddDefaultTokenProviders();
+
+            
             // Services and BL
             services.AddScoped<PostTestDataService>();
             services.AddTransient<IBlobStorageBusinessLogic, BlobStorageBusinessLogic>();
-            services.AddTransient<IAccountsBusinessLogic, AccountsBusinessLogic>();
+            services.AddTransient<IAccountsService, AccountsService>();
 
             // Cors policy
             services.AddCors(options =>
@@ -71,7 +136,7 @@ namespace Visit.Service
                 );
             });
         }
-        
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -84,15 +149,15 @@ namespace Visit.Service
             {
                 app.UseHsts();
             }
-            
-            app.UseRouting();
-            app.UseHttpsRedirection();
-            app.UseCookiePolicy();
-            app.UseAuthentication();
-            app.UseStaticFiles();
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
             app.UseOpenApi();
             app.UseSwaggerUi3();
+            app.UseRouting();
+            app.UseCors("CorsPolicy");
+            app.UseHttpsRedirection();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseStaticFiles();
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
             
             app.UseExceptionHandler(appBuilder =>
             {
@@ -124,9 +189,14 @@ namespace Visit.Service
                         }));
                     }
                     //when no error, do next.
-                    else await next();
+                    else
+                    {
+                        await next();
+                    }
                 });
             });
         }
     }
 }
+
+// options.Authority = $"https://cognito-idp.{Configuration.GetSection("AWS")["Region"]}.amazonaws.com/{Configuration.GetSection("AwsCognito")["UserPoolId"]}";

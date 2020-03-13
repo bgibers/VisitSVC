@@ -32,10 +32,7 @@ namespace Visit.Service.ApiControllers
         {
             var tag = await _context.Tag.FindAsync(id);
 
-            if (tag == null)
-            {
-                return NotFound();
-            }
+            if (tag == null) return NotFound();
 
             return tag;
         }
@@ -46,10 +43,7 @@ namespace Visit.Service.ApiControllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTag(int id, Tag tag)
         {
-            if (id != tag.TagId)
-            {
-                return BadRequest();
-            }
+            if (id != tag.TagId) return BadRequest();
 
             _context.Entry(tag).State = EntityState.Modified;
 
@@ -60,13 +54,8 @@ namespace Visit.Service.ApiControllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!TagExists(id))
-                {
                     return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return NoContent();
@@ -81,7 +70,7 @@ namespace Visit.Service.ApiControllers
             _context.Tag.Add(tag);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTag", new { id = tag.TagId }, tag);
+            return CreatedAtAction("GetTag", new {id = tag.TagId}, tag);
         }
 
         // DELETE: api/TagController/5
@@ -89,10 +78,7 @@ namespace Visit.Service.ApiControllers
         public async Task<ActionResult<Tag>> DeleteTag(int id)
         {
             var tag = await _context.Tag.FindAsync(id);
-            if (tag == null)
-            {
-                return NotFound();
-            }
+            if (tag == null) return NotFound();
 
             _context.Tag.Remove(tag);
             await _context.SaveChangesAsync();

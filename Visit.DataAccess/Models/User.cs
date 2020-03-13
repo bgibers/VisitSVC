@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace Visit.DataAccess.Models
 {
-    public partial class User
+    public class User : IdentityUser
     {
         public User()
         {
@@ -17,16 +18,13 @@ namespace Visit.DataAccess.Models
             UserMessageFkSenderUser = new HashSet<UserMessage>();
         }
 
-        public string UserId { get; set; }
-        public string Username { get; set; }
-        public string Email { get; set; }
         public string Firstname { get; set; }
         public string Lastname { get; set; }
         public DateTime? Birthday { get; set; }
         public string Avi { get; set; }
         public int? FkBirthLocationId { get; set; }
         public int? FkResidenceLocationId { get; set; }
-
+        public long? FacebookId { get; set; }
         public virtual Location FkBirthLocation { get; set; }
         public virtual Location FkResidenceLocation { get; set; }
         public virtual ICollection<Like> Like { get; set; }

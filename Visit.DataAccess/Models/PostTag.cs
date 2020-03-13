@@ -1,6 +1,6 @@
 ﻿namespace Visit.DataAccess.Models
 {
-    public partial class PostTag
+    public class PostTag
     {
         public int PostTagId { get; set; }
         public int? FkPostId { get; set; }

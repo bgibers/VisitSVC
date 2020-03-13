@@ -32,10 +32,7 @@ namespace Visit.Service.ApiControllers
         {
             var userMessage = await _context.UserMessage.FindAsync(id);
 
-            if (userMessage == null)
-            {
-                return NotFound();
-            }
+            if (userMessage == null) return NotFound();
 
             return userMessage;
         }
@@ -46,10 +43,7 @@ namespace Visit.Service.ApiControllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUserMessage(int id, UserMessage userMessage)
         {
-            if (id != userMessage.UserMessageId)
-            {
-                return BadRequest();
-            }
+            if (id != userMessage.UserMessageId) return BadRequest();
 
             _context.Entry(userMessage).State = EntityState.Modified;
 
@@ -60,13 +54,8 @@ namespace Visit.Service.ApiControllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!UserMessageExists(id))
-                {
                     return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return NoContent();
@@ -81,7 +70,7 @@ namespace Visit.Service.ApiControllers
             _context.UserMessage.Add(userMessage);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUserMessage", new { id = userMessage.UserMessageId }, userMessage);
+            return CreatedAtAction("GetUserMessage", new {id = userMessage.UserMessageId}, userMessage);
         }
 
         // DELETE: api/UserMessage/5
@@ -89,10 +78,7 @@ namespace Visit.Service.ApiControllers
         public async Task<ActionResult<UserMessage>> DeleteUserMessage(int id)
         {
             var userMessage = await _context.UserMessage.FindAsync(id);
-            if (userMessage == null)
-            {
-                return NotFound();
-            }
+            if (userMessage == null) return NotFound();
 
             _context.UserMessage.Remove(userMessage);
             await _context.SaveChangesAsync();
