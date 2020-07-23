@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using NSwag;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Visit.DataAccess.Auth;
 using Visit.DataAccess.Auth.Helpers;
@@ -42,7 +43,18 @@ namespace Visit.Service
                 .AddNewtonsoftJson(options =>
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
-            services.AddOpenApiDocument();
+            services.AddSwaggerDocument(c =>
+            {
+                c.AddSecurity("Bearer", new OpenApiSecurityScheme()
+                {
+                    In = OpenApiSecurityApiKeyLocation.Header,
+                    Description = "Please insert JWT with Bearer into field",
+                    Name = "Authorization",
+                    Type = OpenApiSecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT"
+                });            
+            }); 
             services.AddDbContext<VisitContext>(
                 options => options.UseMySql(Configuration.GetConnectionString("MySql"),
                     mySqlOptions =>
