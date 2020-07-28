@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Visit.DataAccess.Auth;
@@ -17,6 +18,8 @@ namespace Visit.Service.BusinessLogic.Interfaces
         Task<bool> ForgotPassword(ResetPasswordRequest model);
         Task<CodeConfirmResult> ConfirmPasswordReset(SetNewPasswordWithCodeRequest model);
         Task<JwtToken> LoginUser(LoginApiRequest credentials);
+        Task<UploadImageResponse> UpdateProfileImage(Claim user, IFormFile image);
 
+        Task<bool> EmailAlreadyTaken(string email);
     }
 }

@@ -12,8 +12,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using NSwag;
+ using Microsoft.OpenApi.Models;
+ using Newtonsoft.Json;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Visit.DataAccess.Auth;
 using Visit.DataAccess.Auth.Helpers;
@@ -23,7 +23,7 @@ using Visit.Service.BusinessLogic;
 using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Config;
-
+ 
 namespace Visit.Service
 {
     public class Startup
@@ -43,18 +43,35 @@ namespace Visit.Service
                 .AddNewtonsoftJson(options =>
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
-            services.AddSwaggerDocument(c =>
+            services.AddSwaggerGen(c =>
             {
-                c.AddSecurity("Bearer", new OpenApiSecurityScheme()
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Visit", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    In = OpenApiSecurityApiKeyLocation.Header,
-                    Description = "Please insert JWT with Bearer into field",
                     Name = "Authorization",
-                    Type = OpenApiSecuritySchemeType.ApiKey,
+                    Type = SecuritySchemeType.ApiKey,
                     Scheme = "Bearer",
-                    BearerFormat = "JWT"
-                });            
-            }); 
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "",
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+
+            });
             services.AddDbContext<VisitContext>(
                 options => options.UseMySql(Configuration.GetConnectionString("MySql"),
                     mySqlOptions =>
@@ -135,6 +152,7 @@ namespace Visit.Service
             // Services and BL
             services.AddScoped<PostTestDataService>();
             services.AddTransient<IBlobStorageBusinessLogic, BlobStorageBusinessLogic>();
+            services.AddTransient<IUserBusinessLogic, UserBusinessLogic>();
             services.AddTransient<IAccountsService, AccountsService>();
 
             // Cors policy
@@ -161,8 +179,11 @@ namespace Visit.Service
             {
                 app.UseHsts();
             }
-            app.UseOpenApi();
-            app.UseSwaggerUi3();
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Visit API V1");
+            });
             app.UseRouting();
             app.UseCors("CorsPolicy");
             app.UseHttpsRedirection();

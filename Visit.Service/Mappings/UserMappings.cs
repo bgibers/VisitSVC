@@ -30,12 +30,15 @@ namespace Visit.Service.Mappings
             CreateMap<User, UserResponse>().ForMember(au => au.ResidenceLocation, map => map.MapFrom(vm => vm.FkResidenceLocation));
             CreateMap<User, UserResponse>().ForMember(au => au.Avi, map => map.MapFrom(vm => vm.Avi));
             CreateMap<User, UserResponse>().ForMember(au => au.FacebookId, map => map.MapFrom(vm => vm.FacebookId));
-            CreateMap<User, UserResponse>().ForMember(au => au.Likes, map => map.MapFrom(vm => vm.Like));
             CreateMap<User, UserResponse>().ForMember(au => au.Posts, map => map.MapFrom(vm => vm.Post));
-            CreateMap<User, UserResponse>().ForMember(au => au.Followers, map => map.MapFrom(vm => vm.UserFollowingFkMainUser));
-            CreateMap<User, UserResponse>().ForMember(au => au.Following, map => map.MapFrom(vm => vm.UserFollowingFkFollowUser));
-            CreateMap<User, UserResponse>().ForMember(au => au.Followers, map => map.MapFrom(vm => vm.UserFollowingFkMainUser));
+            CreateMap<User, UserResponse>().ForMember(au => au.FollowerCount, map => map.Ignore());
+            CreateMap<User, UserResponse>().ForMember(au => au.FollowingCount, map => map.Ignore());
             CreateMap<User, UserResponse>().ForMember(au => au.UserLocations, map => map.MapFrom(vm => vm.UserLocation));
+
+            CreateMap<User, SlimUserResponse>().ForMember(au => au.UserId, map => map.MapFrom(vm => vm.Id));
+            CreateMap<User, SlimUserResponse>().ForMember(au => au.FirstName, map => map.MapFrom(vm => vm.Firstname));
+            CreateMap<User, SlimUserResponse>().ForMember(au => au.LastName, map => map.MapFrom(vm => vm.Lastname));
+            CreateMap<User, SlimUserResponse>().ForMember(au => au.Avi, map => map.MapFrom(vm => vm.Avi));
 
         }
 

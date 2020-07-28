@@ -18,24 +18,19 @@ namespace Visit.Service.Models.Responses
         public virtual Location ResidenceLocation { get; set; }
         
         /// <summary>
-        /// Everything the user has liked
-        /// </summary>
-        public virtual ICollection<Like> Likes { get; set; }
-        
-        /// <summary>
         /// All posts by the user
         /// </summary>
         public virtual ICollection<Post> Posts { get; set; }
         
         /// <summary>
-        /// The users that this user follows
+        /// The number of users the user follows
         /// </summary>
-        public virtual ICollection<UserFollowing> Following { get; set; }
+        public int FollowingCount { get; set; }
         
         /// <summary>
-        /// All of this users followers
+        /// Count of the users followers
         /// </summary>
-        public virtual ICollection<UserFollowing> Followers { get; set; }
+        public int FollowerCount { get; set; }
         
         /// <summary>
         /// All locations that this user has marked 

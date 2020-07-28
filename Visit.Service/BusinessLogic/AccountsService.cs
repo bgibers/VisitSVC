@@ -1,15 +1,11 @@
 using System;
-using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
 using Newtonsoft.Json;
 using Visit.DataAccess.Auth;
 using Visit.DataAccess.Auth.Helpers;
@@ -17,7 +13,6 @@ using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
-using Visit.Service.Models;
 using Visit.Service.Models.Enums;
 using Visit.Service.Models.Requests;
 using Visit.Service.Models.Responses;
@@ -92,8 +87,6 @@ namespace Visit.Service.BusinessLogic
             User userToVerify;
             if (userName.Contains('@'))
             {
-                //need to fix this
-                IsEmailValid(userName);
                 userToVerify = await _userManager.FindByEmailAsync(userName);
             }
             else
@@ -113,50 +106,42 @@ namespace Visit.Service.BusinessLogic
             return await Task.FromResult<ClaimsIdentity>(null);
         }
 
-        public async Task<bool> UserNameEmailTaken(string login)
+        public async Task<bool> EmailAlreadyTaken(string email)
         {
-            if (login.Contains('@'))
-            {
-                //need to fix this
-                IsEmailValid(login);
-                var result = await _userManager.FindByEmailAsync(login);
+            var result = await _userManager.FindByEmailAsync(email);
 
-                if (result != null) return true;
-            }
-            else
-            {
-                var result = await _userManager.FindByNameAsync(login);
-                if (result != null) return true;
-            }
-
-            return false;
-        }
-
-        private bool IsEmailValid(string mail)
-        {
-            try
-            {                
-                MailAddress eMailAddress = new MailAddress(mail);
-                return true;
-            }
-            catch (FormatException)
-            {
-                return false;  
-            }
+            return result != null;
         }
         
-        public async Task<IdentityResult> UpdateProfileImage(IFormFile image, Claim user)
+        public async Task<UploadImageResponse> UpdateProfileImage(Claim user, IFormFile image)
         {
             var currentUser = await _userManager.FindByNameAsync(user.Value);
 
-            if (!await _blobStorage.UploadFile(currentUser.Id, image))
+            if (!await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image))
             {
-                throw new StorageException("User " + currentUser.UserName + " Avi not updated");
+                _logger.LogError("User " + currentUser.UserName + " Avi not updated");
+                return new UploadImageResponse(false, new ImageErrors()
+                {
+                    IdentityErrors = null,
+                    UploadError = "User " + currentUser.UserName + " avi could not be uploaded"
+                });
             }
+            
+            currentUser.Avi = $"{currentUser.Id}/ProfilePics/{image.Name}";
+            
+            var result = await _userManager.UpdateAsync(currentUser);
+            if (!result.Succeeded)
+            {
+                _logger.LogError($"Could not create user: {result.Errors}");
+                return new UploadImageResponse(false, new ImageErrors()
+                {
+                    IdentityErrors = result.Errors,
+                    UploadError = ""
+                });
+            }
+            
+            return new UploadImageResponse(true,null);
 
-            // todo change this to be the url of the avi
-            currentUser.Avi = currentUser.Id;
-            return await _userManager.UpdateAsync(currentUser);
         }
         
         public async Task<CodeConfirmResult> ConfirmRegister(CodeConfirmRequest model)

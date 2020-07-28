@@ -30,7 +30,15 @@ namespace Visit.DataAccess.Models
         public virtual ICollection<Like> Like { get; set; }
         public virtual ICollection<Post> Post { get; set; }
         public virtual ICollection<PostComment> PostComment { get; set; }
+        
+        /// <summary>
+        ///  All people user is following
+        /// </summary>
         public virtual ICollection<UserFollowing> UserFollowingFkFollowUser { get; set; }
+        
+        /// <summary>
+        /// Everyone following this user
+        /// </summary>
         public virtual ICollection<UserFollowing> UserFollowingFkMainUser { get; set; }
         public virtual ICollection<UserLocation> UserLocation { get; set; }
         public virtual ICollection<UserMessage> UserMessageFkRecieverUser { get; set; }

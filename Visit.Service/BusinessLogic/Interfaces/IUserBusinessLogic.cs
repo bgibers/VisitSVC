@@ -1,9 +1,20 @@
+using System.Threading.Tasks;
+using Visit.DataAccess.Models;
+using Visit.Service.Models.Responses;
+
 namespace Visit.Service.BusinessLogic.Interfaces
 {
     public interface IUserBusinessLogic
     {
-        // wire up all cognito endpoints
-        // get user should also return user locations (location name, id, and status)
-        // register 
+        Task<UserResponse> GetUserById(string id);
+        
+        Task<UserResponse> GetUserByEmail(string email);
+
+        /// <summary>
+        /// For the instances when we only want the users name and image
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<SlimUserResponse> GetSlimUser(string id);
     }
 }

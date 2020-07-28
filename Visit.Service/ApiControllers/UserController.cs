@@ -5,18 +5,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
+using Visit.Service.BusinessLogic.Interfaces;
+using Visit.Service.Models.Responses;
 
 namespace Visit.Service.ApiControllers
 {
-    [Route("api/[controller]")]
+    [Route("User")]
     [ApiController]
     public class UserController : ControllerBase
     {
         private readonly VisitContext _context;
+        private readonly IUserBusinessLogic _userBusinessLogic;
 
-        public UserController(VisitContext context)
+        public UserController(VisitContext context, IUserBusinessLogic userBusinessLogic)
         {
             _context = context;
+            _userBusinessLogic = userBusinessLogic;
         }
 
         // GET: api/User
@@ -28,39 +32,11 @@ namespace Visit.Service.ApiControllers
 
         // GET: api/User/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<UserResponse>> GetUser(string id)
         {
-            var user = await _context.User.FindAsync(id);
-
-            if (user == null) return NotFound();
-
-            return user;
+            return await _userBusinessLogic.GetUserById(id);
         }
-
-        // PUT: api/User/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(string id, User user)
-        {
-            if (id != user.Id) return BadRequest();
-
-            _context.Entry(user).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                    return NotFound();
-                throw;
-            }
-
-            return NoContent();
-        }
-
+        
         // POST: api/User
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.

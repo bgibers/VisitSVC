@@ -1,163 +1,141 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Visit.Service.Config;
 
 namespace Visit.Service.BusinessLogic.BlobStorage
 {
     public class BlobStorageBusinessLogic : IBlobStorageBusinessLogic
     {
-        private readonly IOptions<BlobConfig> _config;
         private readonly ILogger<BlobStorageBusinessLogic> _logger;
+        private readonly BlobContainerClient _storageContainer;
+        private readonly string _accountName;
 
         public BlobStorageBusinessLogic(IOptions<BlobConfig> config, ILogger<BlobStorageBusinessLogic> logger)
         {
-            _config = config;
+            if (string.IsNullOrEmpty(config.Value.StorageConnection))
+            {
+                throw new Exception("Storage connection is null");
+            }
+
+            if (string.IsNullOrEmpty(config.Value.Container))
+            {
+                throw new Exception("Container name is null");
+            }
+
             _logger = logger;
+            _storageContainer = new BlobContainerClient(config.Value.StorageConnection, config.Value.Container);
+            _storageContainer.CreateIfNotExists();
+
+            _accountName = _storageContainer.AccountName;
         }
 
-        public async Task<List<string>> ListFiles()
+        /// <inheritdoc />
+        public string GetAccountName()
         {
-            var blobs = new List<string>();
-            try
-            {
-                if (CloudStorageAccount.TryParse(_config.Value.StorageConnection,
-                    out var storageAccount))
-                {
-                    var blobClient = storageAccount.CreateCloudBlobClient();
-
-                    var container = blobClient.GetContainerReference(_config.Value.Container);
-
-                    var resultSegment = await container.ListBlobsSegmentedAsync(null);
-                    foreach (var item in resultSegment.Results)
-                        if (item.GetType() == typeof(CloudBlockBlob))
-                        {
-                            var blob = (CloudBlockBlob) item;
-                            blobs.Add(blob.Name);
-                        }
-                        else if (item.GetType() == typeof(CloudPageBlob))
-                        {
-                            var blob = (CloudPageBlob) item;
-                            blobs.Add(blob.Name);
-                        }
-                        else if (item.GetType() == typeof(CloudBlobDirectory))
-                        {
-                            var dir = (CloudBlobDirectory) item;
-                            blobs.Add(dir.Uri.ToString());
-                        }
-                }
-
-                _logger.LogCritical("Can't read Blob Storage connection from config");
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-            }
-
-            return blobs;
+            return _accountName;
         }
 
-        public async Task<bool> UploadFile(string userId, IFormFile asset)
+        /// <inheritdoc />
+        public async Task<bool> VerifyContainersExistence()
+        {
+            return await _storageContainer.ExistsAsync();
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> CheckBlobExistence(string blobName)
+        {
+            var blob = GetBlob(blobName);
+            var exists = (await blob.ExistsAsync()).Value;
+
+            _logger.LogInformation($"Blob at {blobName} existence:{exists}");
+            return exists;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> DeleteBlobIfExists(string blobName)
+        {
+            return await _storageContainer.DeleteBlobIfExistsAsync(blobName);
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> UploadBlob(string blobPath, IFormFile file)
         {
             try
             {
-                if (CloudStorageAccount.TryParse(_config.Value.StorageConnection,
-                    out var storageAccount))
+                var blob = GetBlob($"{blobPath}/{file.FileName}");
+
+                using (var stream = file.OpenReadStream())
                 {
-                    var blobClient = storageAccount.CreateCloudBlobClient();
-
-                    var container = blobClient.GetContainerReference(_config.Value.Container);
-
-                    // creates the blob if it doesn't already exist, and overwrites it if it does.
-                    var blockBlob = await container.GetBlobReferenceFromServerAsync($"{userId}/{asset.FileName}");
-                    await blockBlob.UploadFromStreamAsync(asset.OpenReadStream());
-
-                    return true;
+                    await blob.UploadAsync(stream, true);
                 }
 
-                _logger.LogCritical("Can't read Blob Storage connection from config");
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-            }
-
-            return false;
-        }
-
-        public async Task<List<string>> ListDirectoryFiles(string directory)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<string> GetFileByName(string fileName)
-        {
-            try
-            {
-                var ms = new MemoryStream();
-
-                if (CloudStorageAccount.TryParse(_config.Value.StorageConnection,
-                    out var storageAccount))
-                {
-                    var blobClient = storageAccount.CreateCloudBlobClient();
-                    var container = blobClient.GetContainerReference(_config.Value.Container);
-                    if (await container.ExistsAsync())
-                    {
-                        var file = container.GetBlobReference(fileName);
-                        await file.FetchAttributesAsync();
-                        var arr = new byte[file.Properties.Length];
-                        await file.DownloadToByteArrayAsync(arr, 0);
-                        var fileBase64 = Convert.ToBase64String(arr);
-                        return fileBase64;
-                    }
-
-                    _logger.LogCritical(new StorageException("Container does not exist").ToString());
-                }
-
-                _logger.LogCritical("Can't read Blob Storage connection from config");
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-            }
-
-            return null;
-        }
-
-        public async Task<bool> DeleteFile(string fileName)
-        {
-            try
-            {
-                if (CloudStorageAccount.TryParse(_config.Value.StorageConnection,
-                    out var storageAccount))
-                {
-                    var blobClient = storageAccount.CreateCloudBlobClient();
-                    var container = blobClient.GetContainerReference(_config.Value.Container);
-
-                    if (await container.ExistsAsync())
-                    {
-                        var file = container.GetBlobReference(fileName);
-
-                        if (await file.ExistsAsync()) await file.DeleteAsync();
-                    }
-                    else
-                    {
-                        _logger.LogCritical(new StorageException("Container does not exist").ToString());
-                    }
-                }
-
+                _logger.LogInformation($"Blob at {blobPath} uploaded successfully");
                 return true;
             }
-            catch
+            catch (Exception e)
             {
+                _logger.LogError($"Blob at {blobPath} could not upload: {e}");
                 return false;
             }
+        }
+
+        /// <inheritdoc />
+        public async Task<string> GetBlobContents(string blobName)
+        {
+            var blob = GetBlob(blobName);
+            return await ReadBlobAsync(blob);
+        }
+
+        /// <inheritdoc />
+        public BlobClient GetBlob(string blobPath)
+        {
+            return _storageContainer.GetBlobClient(blobPath);
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<string> ListDirectoryContents(string directory)
+        {
+            // once we're on 3.1 we can move to
+            // await foreach (BlobItem blobItem in containerClient.GetBlobsAsync())
+            var blobs = GetBlobFiles(directory);
+            return blobs.Select(b => b.Name);
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<BlobItem> GetBlobFiles(string directory)
+        {
+            return _storageContainer.GetBlobs(BlobTraits.Metadata, BlobStates.None, prefix: directory);
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateBlobMetadata(string blobName, IDictionary<string, string> metadata)
+        {
+            await _storageContainer.GetBlobClient(blobName).SetMetadataAsync(metadata);
+        }
+
+
+        private async Task<string> ReadBlobAsync(BlobClient blob)
+        {
+            if ((await blob.ExistsAsync()).Value)
+            {
+
+                using (var stream = (await blob.DownloadAsync()).Value.Content)
+                using (var streamReader = new StreamReader(stream))
+                {
+                    return await streamReader.ReadToEndAsync();
+                }
+            }
+
+            throw new Exception($"Unable to find blob for {blob.Name}");
         }
     }
 }

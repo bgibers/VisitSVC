@@ -1,10 +1,14 @@
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Visit.DataAccess.Auth;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models;
 using Visit.Service.Models.Requests;
+using Visit.Service.Models.Responses;
 
 namespace Visit.Service.ApiControllers
 {
@@ -23,7 +27,7 @@ namespace Visit.Service.ApiControllers
         [ProducesResponseType(400)]
         public async Task<ActionResult<JwtToken>> Register([FromBody] RegisterRequest request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+//            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var response = await _accountsService.RegisterUser(request);
 
@@ -41,7 +45,25 @@ namespace Visit.Service.ApiControllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            // Todo create a response for logging in user
             return await _accountsService.LoginUser(requestApi);
+        }
+        
+        [Authorize(Policy = "VisitUser")]
+        [HttpPost("update/profile_image")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> UpdateProfileImage(IFormFile image)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            var response = await _accountsService.UpdateProfileImage(user ,image);
+            
+            if (!response.Success)
+            {
+                return BadRequest(response.Errors);
+            }
+
+            return new OkResult();
         }
 
 //        [HttpPost("confirm")]
