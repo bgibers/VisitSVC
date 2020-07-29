@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -58,7 +59,7 @@ namespace Visit.Service.BusinessLogic
 
             var token = await LoginUser(new LoginApiRequest()
             {
-                UserName = model.Username,
+                UserName = model.Email,
                 Password = model.Password
             });
             
@@ -113,9 +114,9 @@ namespace Visit.Service.BusinessLogic
             return result != null;
         }
         
-        public async Task<UploadImageResponse> UpdateProfileImage(Claim user, IFormFile image)
+        public async Task<UploadImageResponse> UpdateProfileImage(Claim claim, IFormFile image)
         {
-            var currentUser = await _userManager.FindByNameAsync(user.Value);
+            var currentUser = await _userManager.FindByNameAsync(claim.Value);
 
             if (!await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image))
             {
@@ -142,6 +143,29 @@ namespace Visit.Service.BusinessLogic
             
             return new UploadImageResponse(true,null);
 
+        }
+
+        public async Task<int> ChangeLocationStatus(Claim claim, MarkLocationsRequest request)
+        {
+            var user = await _userManager.FindByNameAsync(claim.Value);
+
+            // request.locations contains <locationName,Status>
+            foreach (var i in request.Locations)
+            {
+                var location = _visitContext.Location.Single(f => f.LocationCode == i.Key);
+                
+                var userLocation = new UserLocation
+                {
+                    Status = i.Value,
+                    Venue = "",
+                    FkLocation = location,
+                    FkUser = user
+                };
+                
+                _visitContext.UserLocation.Add(userLocation);
+            }
+            
+            return  await _visitContext.SaveChangesAsync();
         }
         
         public async Task<CodeConfirmResult> ConfirmRegister(CodeConfirmRequest model)

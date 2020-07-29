@@ -65,6 +65,19 @@ namespace Visit.Service.ApiControllers
 
             return new OkResult();
         }
+        
+        [Authorize(Policy = "VisitUser")]
+        [HttpPost("update/locations")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> UpdateLocationStatus([FromBody] MarkLocationsRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            await _accountsService.ChangeLocationStatus(user, request);
+
+            return true;
+        }
 
 //        [HttpPost("confirm")]
 //        [ProducesResponseType(typeof(CodeConfirmResult),200)]

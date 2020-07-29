@@ -10,18 +10,18 @@ namespace Visit.Service.Mappings
     {
         public UserMappings()
         {
-            CreateMap<RegisterRequest, User>().ForMember(au => au.UserName, map => map.MapFrom(vm => vm.Username));
+            CreateMap<RegisterRequest, User>().ForMember(au => au.UserName, map => map.MapFrom(vm => vm.Email));
             CreateMap<RegisterRequest, User>().ForMember(au => au.Firstname, map => map.MapFrom(vm => vm.Firstname));
             CreateMap<RegisterRequest, User>().ForMember(au => au.Lastname, map => map.MapFrom(vm => vm.Lastname));
             CreateMap<RegisterRequest, User>().ForMember(au => au.Email, map => map.MapFrom(vm => vm.Email));
             CreateMap<RegisterRequest, User>().ForMember(au => au.Birthday, map => map.MapFrom(vm => vm.Birthday));
-            CreateMap<RegisterRequest, User>().ForMember(au => au.FkBirthLocationId, map => map.MapFrom(vm => vm.FkBirthLocationId));
-            CreateMap<RegisterRequest, User>().ForMember(au => au.FkResidenceLocationId, map => map.MapFrom(vm => vm.FkResidenceLocationId));
+            CreateMap<RegisterRequest, User>().ForMember(au => au.FkBirthLocationId, map => map.Ignore());
+            CreateMap<RegisterRequest, User>().ForMember(au => au.FkResidenceLocationId, map => map.Ignore());
             CreateMap<RegisterRequest, User>().ForMember(au => au.Avi, map => map.Ignore());
             CreateMap<RegisterRequest, User>().ForMember(au => au.FacebookId, map => map.MapFrom(vm => vm.FacebookId));
 
             CreateMap<User, UserResponse>().ForMember(au => au.UserId, map => map.MapFrom(vm => vm.Id));
-            CreateMap<User, UserResponse>().ForMember(au => au.Username, map => map.MapFrom(vm => vm.UserName));
+            CreateMap<User, UserResponse>().ForMember(au => au.Email, map => map.MapFrom(vm => vm.UserName));
             CreateMap<User, UserResponse>().ForMember(au => au.Firstname, map => map.MapFrom(vm => vm.Firstname));
             CreateMap<User, UserResponse>().ForMember(au => au.Lastname, map => map.MapFrom(vm => vm.Lastname));
             CreateMap<User, UserResponse>().ForMember(au => au.Email, map => map.MapFrom(vm => vm.Email));
