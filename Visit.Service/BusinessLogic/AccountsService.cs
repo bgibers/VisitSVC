@@ -46,7 +46,7 @@ namespace Visit.Service.BusinessLogic
         public async Task<CreateUserResponse> RegisterUser(RegisterRequest model)
         {
             var userIdentity = _mapper.Map<User>(model);
-
+            userIdentity.UserName = model.Email;
             var result = await _userManager.CreateAsync(userIdentity, model.Password);
             
             if (!result.Succeeded)

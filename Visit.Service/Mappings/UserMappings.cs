@@ -21,7 +21,6 @@ namespace Visit.Service.Mappings
             CreateMap<RegisterRequest, User>().ForMember(au => au.FacebookId, map => map.MapFrom(vm => vm.FacebookId));
 
             CreateMap<User, UserResponse>().ForMember(au => au.UserId, map => map.MapFrom(vm => vm.Id));
-            CreateMap<User, UserResponse>().ForMember(au => au.Email, map => map.MapFrom(vm => vm.UserName));
             CreateMap<User, UserResponse>().ForMember(au => au.Firstname, map => map.MapFrom(vm => vm.Firstname));
             CreateMap<User, UserResponse>().ForMember(au => au.Lastname, map => map.MapFrom(vm => vm.Lastname));
             CreateMap<User, UserResponse>().ForMember(au => au.Email, map => map.MapFrom(vm => vm.Email));
