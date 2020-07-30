@@ -22,6 +22,11 @@ namespace Visit.Service.ApiControllers
             _accountsService = accountsService;
         }
 
+        /// <summary>
+        /// Basic registration 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost("register")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -39,6 +44,11 @@ namespace Visit.Service.ApiControllers
             return response.JwtToken;
         }
         
+        /// <summary>
+        /// Login
+        /// </summary>
+        /// <param name="requestApi"></param>
+        /// <returns></returns>
         [HttpPost("login")]
         [ProducesResponseType(200)]
         public async Task<ActionResult<JwtToken>> Login([FromBody] LoginApiRequest requestApi)
@@ -49,6 +59,23 @@ namespace Visit.Service.ApiControllers
             return await _accountsService.LoginUser(requestApi);
         }
         
+        /// <summary>
+        /// Checks if the email has already registered
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        [HttpGet("email_taken")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> EmailTaken(string email)
+        { 
+            return await _accountsService.EmailAlreadyTaken(email);
+        }
+        
+        /// <summary>
+        /// Updates the logged in users profile img
+        /// </summary>
+        /// <param name="image"></param>
+        /// <returns></returns>
         [Authorize(Policy = "VisitUser")]
         [HttpPost("update/profile_image")]
         [ProducesResponseType(200)]
@@ -66,6 +93,11 @@ namespace Visit.Service.ApiControllers
             return new OkResult();
         }
         
+        /// <summary>
+        /// Updates the status of world locations
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [Authorize(Policy = "VisitUser")]
         [HttpPost("update/locations")]
         [ProducesResponseType(200)]

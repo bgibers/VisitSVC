@@ -58,7 +58,8 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<SlimUserResponse> GetSlimUser(string id)
         {
-            return _mapper.Map<SlimUserResponse>(await _userManager.FindByIdAsync(id));
+            var user = await _userManager.FindByIdAsync(id);
+            return _mapper.Map<SlimUserResponse>(user);
         }
     }
 }
