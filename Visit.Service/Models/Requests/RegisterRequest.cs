@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace Visit.Service.Models.Requests
 {
@@ -15,6 +16,9 @@ namespace Visit.Service.Models.Requests
         public string Firstname { get; set; }
         public string Lastname { get; set; }
         public DateTime? Birthday { get; set; }
+        public string Title { get; set; }
+        public string Education { get; set; }
+        public IFormFile Avi { get; set; }
         public long FacebookId { get; set; }
         public string BirthLocation { get; set; }
         public string ResidenceLocation { get; set; }

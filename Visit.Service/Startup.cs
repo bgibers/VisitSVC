@@ -78,6 +78,8 @@ namespace Visit.Service
                     {
                         mySqlOptions.ServerVersion(new Version(5, 7, 17),
                             ServerType.MySql); // replace with your Server Version and Type
+
+                        mySqlOptions.MigrationsAssembly("Visit.Service");
                     }
                 ).EnableSensitiveDataLogging());
             services.AddAutoMapper(typeof(Startup));

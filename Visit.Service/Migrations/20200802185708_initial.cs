@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -123,6 +123,12 @@ namespace Visit.Service.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4")
                         .Annotation("MySql:Collation", "utf8mb4_0900_ai_ci"),
                     Birthday = table.Column<DateTime>(nullable: true),
+                    Title = table.Column<string>(type: "varchar(150)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("MySql:Collation", "utf8mb4_0900_ai_ci"),
+                    Education = table.Column<string>(type: "varchar(150)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("MySql:Collation", "utf8mb4_0900_ai_ci"),
                     Avi = table.Column<string>(type: "varchar(150)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                         .Annotation("MySql:Collation", "utf8mb4_0900_ai_ci"),

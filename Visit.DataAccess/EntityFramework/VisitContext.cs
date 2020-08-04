@@ -320,6 +320,27 @@ namespace Visit.DataAccess.EntityFramework
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_0900_ai_ci");
 
+                entity.Property(e => e.Title)
+                    .HasColumnType("varchar(150)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
+                
+                entity.Property(e => e.Education)
+                    .HasColumnType("varchar(150)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
+                
+                entity.Property(e => e.BirthLocation)
+                    .HasColumnType("varchar(150)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
+                
+                entity.Property(e => e.ResidenceLocation)
+                    .HasColumnType("varchar(150)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_0900_ai_ci");
+
+                
                 entity.Property(e => e.FkBirthLocationId)
                     .HasColumnName("FK_BirthLocationId")
                     .HasColumnType("int(11)");

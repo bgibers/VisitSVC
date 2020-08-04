@@ -56,7 +56,11 @@ namespace Visit.Service.BusinessLogic
             }
 
             await _visitContext.SaveChangesAsync();
-
+            
+            // Try to get a claim and uplaod image. Prob need some logging/retry handling here
+            var claim = await GetClaimsIdentity(model.Email, model.Password);
+            await UpdateProfileImage(claim.Claims.Single(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"), model.Avi);
+            
             var token = await LoginUser(new LoginApiRequest()
             {
                 UserName = model.Email,

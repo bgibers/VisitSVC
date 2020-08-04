@@ -9,13 +9,18 @@ namespace Visit.Service.Models.Responses
         public string UserId { get; set; }
         public string Firstname { get; set; }
         public string Lastname { get; set; }
+        
         public string Username { get; set; }
         public string Email { get; set; }
         public DateTime? Birthday { get; set; }
         public string Avi { get; set; }
         public long? FacebookId { get; set; }
-        public virtual Location BirthLocation { get; set; }
-        public virtual Location ResidenceLocation { get; set; }
+        public string BirthLocation { get; set; }
+        public string ResidenceLocation { get; set; }
+        public string Title { get; set; }
+        public string Education { get; set; }
+//        public virtual Location BirthLocation { get; set; }
+//        public virtual Location ResidenceLocation { get; set; }
         
         /// <summary>
         /// All posts by the user
