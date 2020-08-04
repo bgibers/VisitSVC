@@ -9,18 +9,18 @@ namespace Visit.Service.Models.Responses
         public string UserId { get; set; }
         public string Firstname { get; set; }
         public string Lastname { get; set; }
+        
         public string Username { get; set; }
         public string Email { get; set; }
         public DateTime? Birthday { get; set; }
         public string Avi { get; set; }
         public long? FacebookId { get; set; }
-        public virtual Location BirthLocation { get; set; }
-        public virtual Location ResidenceLocation { get; set; }
-        
-        /// <summary>
-        /// Everything the user has liked
-        /// </summary>
-        public virtual ICollection<Like> Likes { get; set; }
+        public string BirthLocation { get; set; }
+        public string ResidenceLocation { get; set; }
+        public string Title { get; set; }
+        public string Education { get; set; }
+//        public virtual Location BirthLocation { get; set; }
+//        public virtual Location ResidenceLocation { get; set; }
         
         /// <summary>
         /// All posts by the user
@@ -28,14 +28,14 @@ namespace Visit.Service.Models.Responses
         public virtual ICollection<Post> Posts { get; set; }
         
         /// <summary>
-        /// The users that this user follows
+        /// The number of users the user follows
         /// </summary>
-        public virtual ICollection<UserFollowing> Following { get; set; }
+        public int FollowingCount { get; set; }
         
         /// <summary>
-        /// All of this users followers
+        /// Count of the users followers
         /// </summary>
-        public virtual ICollection<UserFollowing> Followers { get; set; }
+        public int FollowerCount { get; set; }
         
         /// <summary>
         /// All locations that this user has marked 

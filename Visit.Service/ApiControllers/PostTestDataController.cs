@@ -9,7 +9,7 @@ namespace Visit.Service.ApiControllers
 {
     [Route("api/TestData")]
     [ApiController]
-    //[Authorize(Policy = "VisitUser")]
+    [Authorize(Policy = "VisitUser")]
     public class PostTestDataController
     {
         private readonly PostTestDataService _dataService;

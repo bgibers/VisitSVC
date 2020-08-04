@@ -1,10 +1,14 @@
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Visit.DataAccess.Auth;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models;
 using Visit.Service.Models.Requests;
+using Visit.Service.Models.Responses;
 
 namespace Visit.Service.ApiControllers
 {
@@ -18,12 +22,17 @@ namespace Visit.Service.ApiControllers
             _accountsService = accountsService;
         }
 
+        /// <summary>
+        /// Basic registration 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost("register")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<JwtToken>> Register([FromBody] RegisterRequest request)
+        public async Task<ActionResult<JwtToken>> Register([FromForm] RegisterRequest request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+//            if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var response = await _accountsService.RegisterUser(request);
 
@@ -35,13 +44,71 @@ namespace Visit.Service.ApiControllers
             return response.JwtToken;
         }
         
+        /// <summary>
+        /// Login
+        /// </summary>
+        /// <param name="requestApi"></param>
+        /// <returns></returns>
         [HttpPost("login")]
         [ProducesResponseType(200)]
         public async Task<ActionResult<JwtToken>> Login([FromBody] LoginApiRequest requestApi)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            // Todo create a response for logging in user
             return await _accountsService.LoginUser(requestApi);
+        }
+        
+        /// <summary>
+        /// Checks if the email has already registered
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        [HttpGet("email_taken")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> EmailTaken(string email)
+        { 
+            return await _accountsService.EmailAlreadyTaken(email);
+        }
+        
+        /// <summary>
+        /// Updates the logged in users profile img
+        /// </summary>
+        /// <param name="image"></param>
+        /// <returns></returns>
+        [Authorize(Policy = "VisitUser")]
+        [HttpPost("update/profile_image")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> UpdateProfileImage(IFormFile image)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            var response = await _accountsService.UpdateProfileImage(user ,image);
+            
+            if (!response.Success)
+            {
+                return BadRequest(response.Errors);
+            }
+
+            return new OkResult();
+        }
+        
+        /// <summary>
+        /// Updates the status of world locations
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [Authorize(Policy = "VisitUser")]
+        [HttpPost("update/locations")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> UpdateLocationStatus([FromBody] MarkLocationsRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            await _accountsService.ChangeLocationStatus(user, request);
+
+            return true;
         }
 
 //        [HttpPost("confirm")]

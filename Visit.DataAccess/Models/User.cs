@@ -21,6 +21,18 @@ namespace Visit.DataAccess.Models
         public string Firstname { get; set; }
         public string Lastname { get; set; }
         public DateTime? Birthday { get; set; }
+        public string Title { get; set; }
+        public string Education { get; set; }
+        
+        /// <summary>
+        /// This is temporary. Ideally we want to use the FK
+        /// </summary>
+        public string BirthLocation { get; set; }
+        
+        /// <summary>
+        /// This is temporary. Ideally we want to use the FK
+        /// </summary>
+        public string ResidenceLocation { get; set; }
         public string Avi { get; set; }
         public int? FkBirthLocationId { get; set; }
         public int? FkResidenceLocationId { get; set; }
@@ -30,7 +42,15 @@ namespace Visit.DataAccess.Models
         public virtual ICollection<Like> Like { get; set; }
         public virtual ICollection<Post> Post { get; set; }
         public virtual ICollection<PostComment> PostComment { get; set; }
+        
+        /// <summary>
+        ///  All people user is following
+        /// </summary>
         public virtual ICollection<UserFollowing> UserFollowingFkFollowUser { get; set; }
+        
+        /// <summary>
+        /// Everyone following this user
+        /// </summary>
         public virtual ICollection<UserFollowing> UserFollowingFkMainUser { get; set; }
         public virtual ICollection<UserLocation> UserLocation { get; set; }
         public virtual ICollection<UserMessage> UserMessageFkRecieverUser { get; set; }

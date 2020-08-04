@@ -6,9 +6,6 @@ using Visit.Service.BusinessLogic.BlobStorage;
 
 namespace Visit.Service.ApiControllers
 {
-    // TODO change method of getting file?
-
-
     [Route("storage")]
     [ApiController]
     public class BlobStorageController : ControllerBase
@@ -20,24 +17,24 @@ namespace Visit.Service.ApiControllers
             _blobStorageBusinessLogic = blobStorageBusinessLogic;
         }
 
-        [HttpGet("ListFiles")]
+        [HttpGet("ListFiles/{userId}")]
         [ProducesResponseType(typeof(List<string>), 200)]
-        public async Task<List<string>> ListFiles()
+        public IEnumerable<string> ListFiles(string userId)
         {
-            return await _blobStorageBusinessLogic.ListFiles();
+            return _blobStorageBusinessLogic.ListDirectoryContents(userId);
         }
 
         [HttpPost("UploadFile")]
         public async Task<IActionResult> UploadFile(string fileName, IFormFile asset)
         {
-            return Ok(await _blobStorageBusinessLogic.UploadFile(fileName, asset));
+            return Ok(await _blobStorageBusinessLogic.UploadBlob(fileName, asset));
         }
 
         [HttpGet("DownloadFile/{fileName}")]
         [ProducesResponseType(typeof(string), 200)]
         public async Task<string> DownloadFile(string fileName)
         {
-            return await _blobStorageBusinessLogic.GetFileByName(fileName);
+            return await _blobStorageBusinessLogic.GetBlobContents(fileName);
         }
 
 
@@ -45,7 +42,7 @@ namespace Visit.Service.ApiControllers
         [HttpGet]
         public async Task<IActionResult> DeleteFile(string fileName)
         {
-            return Ok(await _blobStorageBusinessLogic.DeleteFile(fileName));
+            return Ok(await _blobStorageBusinessLogic.DeleteBlobIfExists(fileName));
         }
     }
 }
