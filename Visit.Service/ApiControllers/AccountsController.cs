@@ -30,7 +30,7 @@ namespace Visit.Service.ApiControllers
         [HttpPost("register")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<JwtToken>> Register([FromForm] RegisterRequest request)
+        public async Task<ActionResult<JwtToken>> Register([FromBody] RegisterRequest request)
         {
 //            if (!ModelState.IsValid) return BadRequest(ModelState);
 
