@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Visit.DataAccess.Auth;
@@ -12,6 +13,7 @@ using Visit.Service.Models.Responses;
 
 namespace Visit.Service.ApiControllers
 {
+    [EnableCors("CorsPolicy")]
     [Route("account")]
     public class AccountsController : ControllerBase
     {

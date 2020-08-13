@@ -23,8 +23,7 @@ namespace Visit.Service.Mappings
             CreateMap<RegisterRequest, User>().ForMember(au => au.FacebookId, map => map.MapFrom(vm => vm.FacebookId));
             CreateMap<RegisterRequest, User>().ForMember(au => au.BirthLocation, map => map.MapFrom(vm => vm.BirthLocation));
             CreateMap<RegisterRequest, User>().ForMember(au => au.ResidenceLocation, map => map.MapFrom(vm => vm.ResidenceLocation));
-
-
+            
             CreateMap<User, UserResponse>().ForMember(au => au.UserId, map => map.MapFrom(vm => vm.Id));
             CreateMap<User, UserResponse>().ForMember(au => au.Firstname, map => map.MapFrom(vm => vm.Firstname));
             CreateMap<User, UserResponse>().ForMember(au => au.Lastname, map => map.MapFrom(vm => vm.Lastname));
@@ -40,7 +39,8 @@ namespace Visit.Service.Mappings
             CreateMap<User, UserResponse>().ForMember(au => au.UserLocations, map => map.MapFrom(vm => vm.UserLocation));
             CreateMap<User, UserResponse>().ForMember(au => au.Education, map => map.MapFrom(vm => vm.Education));
             CreateMap<User, UserResponse>().ForMember(au => au.Title, map => map.MapFrom(vm => vm.Title));
-            
+            CreateMap<User, UserResponse>().ForMember(au => au.UserLocations, map => map.MapFrom(vm => vm.UserLocation));
+
             CreateMap<User, SlimUserResponse>().ForMember(au => au.UserId, map => map.MapFrom(vm => vm.Id));
             CreateMap<User, SlimUserResponse>().ForMember(au => au.FirstName, map => map.MapFrom(vm => vm.Firstname));
             CreateMap<User, SlimUserResponse>().ForMember(au => au.LastName, map => map.MapFrom(vm => vm.Lastname));

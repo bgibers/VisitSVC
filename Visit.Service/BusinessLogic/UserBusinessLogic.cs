@@ -33,17 +33,19 @@ namespace Visit.Service.BusinessLogic
         {
             
             var user = await _visitContext.User
-                .Include(u => u.FkBirthLocation)
-                .Include(u => u.FkResidenceLocation)
-                .Include(u => u.Post)
-                .Include(u => u.FkBirthLocation)
+//                .Include(u => u.FkBirthLocation)
+//                .Include(u => u.FkResidenceLocation)
                 .Include(u => u.UserFollowingFkFollowUser)
                 .Include(u => u.UserFollowingFkMainUser)
                 .Include(u => u.UserLocation)
+                    .ThenInclude(l => l.FkLocation)
                 .SingleOrDefaultAsync(u => u.Id == id);
+
+            var aviBlob = _blobStorage.GetBlob(user.Avi);
             
             // take all sensitve data out
             var userScrubbed = _mapper.Map<UserResponse>(user);
+            userScrubbed.Avi = aviBlob.Uri.ToString();
             userScrubbed.FollowerCount = user.UserFollowingFkFollowUser.Count;
             userScrubbed.FollowingCount = user.UserFollowingFkMainUser.Count;
             userScrubbed.UserId = id;
