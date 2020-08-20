@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -40,12 +41,20 @@ namespace Visit.Service.BusinessLogic
                 .Include(u => u.UserLocation)
                     .ThenInclude(l => l.FkLocation)
                 .SingleOrDefaultAsync(u => u.Id == id);
-
-            var aviBlob = _blobStorage.GetBlob(user.Avi);
+            
+            // set a default value of empty string if not found
+            BlobClient aviBlob;
+            try
+            {
+                aviBlob = _blobStorage.GetBlob(user.Avi);
+            } catch
+            {
+                aviBlob = null;
+            }
             
             // take all sensitve data out
             var userScrubbed = _mapper.Map<UserResponse>(user);
-            userScrubbed.Avi = aviBlob.Uri.ToString();
+            userScrubbed.Avi = aviBlob?.Uri.ToString() ?? "";
             userScrubbed.FollowerCount = user.UserFollowingFkFollowUser.Count;
             userScrubbed.FollowingCount = user.UserFollowingFkMainUser.Count;
             userScrubbed.UserId = id;
