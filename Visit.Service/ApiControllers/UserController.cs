@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Visit.DataAccess.EntityFramework;
@@ -12,6 +13,7 @@ using Visit.Service.Models.Responses;
 namespace Visit.Service.ApiControllers
 {
     [Route("User")]
+    [EnableCors("CorsPolicy")]
     [ApiController]
     public class UserController : ControllerBase
     {
