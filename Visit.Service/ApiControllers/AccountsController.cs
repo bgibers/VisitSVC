@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using Visit.DataAccess.Auth;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.Interfaces;
@@ -76,16 +77,16 @@ namespace Visit.Service.ApiControllers
         /// <summary>
         /// Updates the logged in users profile img
         /// </summary>
-        /// <param name="image"></param>
+        /// <param name="data"></param>
         /// <returns></returns>
         [Authorize(Policy = "VisitUser")]
         [HttpPost("update/profile_image")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<bool>> UpdateProfileImage([FromForm] IFormFile image)
+        public async Task<ActionResult<bool>> UpdateProfileImage([FromForm] JObject data)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
-            var response = await _accountsService.UpdateProfileImage(user ,image);
+            var response = await _accountsService.UpdateProfileImage(user ,data["image"].ToObject<IFormFile>());
             
             if (!response.Success)
             {
