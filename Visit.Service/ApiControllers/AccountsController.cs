@@ -77,16 +77,16 @@ namespace Visit.Service.ApiControllers
         /// <summary>
         /// Updates the logged in users profile img
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="image"></param>
         /// <returns></returns>
         [Authorize(Policy = "VisitUser")]
         [HttpPost("update/profile_image")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<bool>> UpdateProfileImage([FromForm] JObject data)
+        public async Task<ActionResult<bool>> UpdateProfileImage([FromForm(Name = "image")] IFormFile image)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
-            var response = await _accountsService.UpdateProfileImage(user ,data["image"].ToObject<IFormFile>());
+            var response = await _accountsService.UpdateProfileImage(user , image);
             
             if (!response.Success)
             {
