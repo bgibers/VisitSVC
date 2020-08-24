@@ -120,8 +120,8 @@ namespace Visit.Service.BusinessLogic
         public async Task<UploadImageResponse> UpdateProfileImage(Claim claim, IFormFile image)
         {
             var currentUser = await _userManager.FindByNameAsync(claim.Value);
-
-            if (!await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image))
+            var fileName = Guid.NewGuid();
+            if (!await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image, fileName))
             {
                 _logger.LogError("User " + currentUser.UserName + " Avi not updated");
                 return new UploadImageResponse(false, new ImageErrors()
@@ -131,7 +131,7 @@ namespace Visit.Service.BusinessLogic
                 });
             }
             
-            currentUser.Avi = $"{currentUser.Id}/ProfilePics/{image.Name}";
+            currentUser.Avi = $"{currentUser.Id}/ProfilePics/{fileName}";
             
             var result = await _userManager.UpdateAsync(currentUser);
             if (!result.Succeeded)

@@ -68,11 +68,11 @@ namespace Visit.Service.BusinessLogic.BlobStorage
         }
 
         /// <inheritdoc />
-        public async Task<bool> UploadBlob(string blobPath, IFormFile file)
+        public async Task<bool> UploadBlob(string blobPath, IFormFile file, Guid fileName)
         {
             try
             {
-                var blob = GetBlob($"{blobPath}/{file.FileName}");
+                var blob = GetBlob($"{blobPath}/{fileName}");
 
                 using (var stream = file.OpenReadStream())
                 {

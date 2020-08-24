@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -25,9 +26,9 @@ namespace Visit.Service.ApiControllers
         }
 
         [HttpPost("UploadFile")]
-        public async Task<IActionResult> UploadFile(string fileName, IFormFile asset)
+        public async Task<IActionResult> UploadFile(string filePath, IFormFile asset)
         {
-            return Ok(await _blobStorageBusinessLogic.UploadBlob(fileName, asset));
+            return Ok(await _blobStorageBusinessLogic.UploadBlob(filePath, asset, Guid.NewGuid()));
         }
 
         [HttpGet("DownloadFile/{fileName}")]
