@@ -84,6 +84,7 @@ namespace Visit.Service.ApiControllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<bool>> UpdateProfileImage([FromForm(Name = "image")] IFormFile image)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
             var response = await _accountsService.UpdateProfileImage(user , image);
             
