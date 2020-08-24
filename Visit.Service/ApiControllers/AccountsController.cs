@@ -82,7 +82,7 @@ namespace Visit.Service.ApiControllers
         [Authorize(Policy = "VisitUser")]
         [HttpPost("update/profile_image")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<bool>> UpdateProfileImage([FromForm(Name = "image")] IFormFile image)
+        public async Task<ActionResult<bool>> UpdateProfileImage(IFormFile image)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
