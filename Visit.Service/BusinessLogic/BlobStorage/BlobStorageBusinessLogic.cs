@@ -9,6 +9,7 @@ using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Visit.Service.Config;
 
 namespace Visit.Service.BusinessLogic.BlobStorage
@@ -83,7 +84,7 @@ namespace Visit.Service.BusinessLogic.BlobStorage
             }
             catch (Exception e)
             {
-                _logger.LogError($"Blob at {blobPath} could not upload: {e}");
+                _logger.LogError($"Blob: {JsonConvert.SerializeObject(file)} at {blobPath} could not upload: {e}");
                 return false;
             }
         }
