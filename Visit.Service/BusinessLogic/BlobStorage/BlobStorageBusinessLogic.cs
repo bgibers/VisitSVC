@@ -73,10 +73,12 @@ namespace Visit.Service.BusinessLogic.BlobStorage
             try
             {
                 var blob = GetBlob($"{blobPath}/{fileName}.jpg");
-
+                BlobHttpHeaders httpHeaders = new BlobHttpHeaders() { 
+                    ContentType = "image/jpeg"
+                };
                 using (var stream = file.OpenReadStream())
                 {
-                    await blob.UploadAsync(stream, true);
+                    await blob.UploadAsync(stream, httpHeaders);
                 }
 
                 _logger.LogInformation($"Blob at {blobPath} uploaded successfully");
