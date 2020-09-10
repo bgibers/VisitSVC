@@ -72,7 +72,7 @@ namespace Visit.Service.BusinessLogic.BlobStorage
         {
             try
             {
-                var blob = GetBlob($"{blobPath}/{fileName}");
+                var blob = GetBlob($"{blobPath}/{fileName}.jpg");
 
                 using (var stream = file.OpenReadStream())
                 {

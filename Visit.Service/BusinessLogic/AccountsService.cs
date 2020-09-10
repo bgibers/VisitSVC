@@ -131,7 +131,7 @@ namespace Visit.Service.BusinessLogic
                 });
             }
             
-            currentUser.Avi = $"{currentUser.Id}/ProfilePics/{fileName}";
+            currentUser.Avi = $"{currentUser.Id}/ProfilePics/{fileName}.jpg";
             
             var result = await _userManager.UpdateAsync(currentUser);
             if (!result.Succeeded)
