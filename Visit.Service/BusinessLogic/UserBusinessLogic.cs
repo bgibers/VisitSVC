@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -65,6 +66,21 @@ namespace Visit.Service.BusinessLogic
         public async Task<UserResponse> GetUserByEmail(string email)
         {
             throw new System.NotImplementedException();
+        }
+
+        public async Task<List<SlimUserResponse>> FindUserBySearchCriteria(string query)
+        {
+            var queries = query.Split(' ');
+            var users = _userManager.Users
+                .Where(u => u.Firstname.ToLower().Contains(queries[0].ToLower()) 
+                            || u.Lastname.ToLower().Contains(queries[0].ToLower())).Take(20);
+
+            if (queries.Length > 1)
+            {
+                users = users.Where(u => u.Lastname.ToLower().Contains(queries[1].ToLower()));
+            }
+            
+            return _mapper.Map<List<SlimUserResponse>>(users.ToList());
         }
 
         public async Task<SlimUserResponse> GetSlimUser(string id)

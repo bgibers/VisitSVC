@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Visit.DataAccess.Models;
 using Visit.Service.Models.Responses;
@@ -16,5 +17,12 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// <param name="id"></param>
         /// <returns></returns>
         Task<SlimUserResponse> GetSlimUser(string id);
+
+        /// <summary>
+        /// For searching 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        Task<List<SlimUserResponse>> FindUserBySearchCriteria(string query);
     }
 }

@@ -37,7 +37,7 @@ namespace Visit.Service.ApiControllers
         }
 
         /// <summary>
-        /// 
+        /// Get a user by their ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -46,6 +46,18 @@ namespace Visit.Service.ApiControllers
         public async Task<ActionResult<UserResponse>> GetUser(string id)
         {
             return await _userBusinessLogic.GetUserById(id);
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        [HttpGet("search/{query}")]
+        [Authorize(Policy = "VisitUser")]
+        public async Task<ActionResult<List<SlimUserResponse>>> Search(string query)
+        {
+            return await _userBusinessLogic.FindUserBySearchCriteria(query);
         }
     }
 }

@@ -8,6 +8,8 @@ namespace Visit.Service.Models.Responses
         
         public string LastName { get; set; }
         
+        public string Residence { get; set; }
+
         public string Avi { get; set; }
     }
 }
