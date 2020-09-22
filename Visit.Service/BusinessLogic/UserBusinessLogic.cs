@@ -80,6 +80,19 @@ namespace Visit.Service.BusinessLogic
                 users = users.Where(u => u.Lastname.ToLower().Contains(queries[1].ToLower()));
             }
             
+            // set a default value of empty string if not found
+            foreach (var user in users)
+            {
+                BlobClient aviBlob;
+                try
+                {
+                    user.Avi = _blobStorage.GetBlob(user.Avi)?.Uri.ToString() ?? "";
+                } catch
+                {
+                    user.Avi = null;
+                }
+            }
+            
             return _mapper.Map<List<SlimUserResponse>>(users.ToList());
         }
 
