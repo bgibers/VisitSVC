@@ -41,10 +41,10 @@ namespace Visit.Service.Mappings
             CreateMap<User, UserResponse>().ForMember(au => au.Title, map => map.MapFrom(vm => vm.Title));
             CreateMap<User, UserResponse>().ForMember(au => au.UserLocations, map => map.MapFrom(vm => vm.UserLocation));
 
-            CreateMap<User, SlimUserResponse>().ForMember(au => au.UserId, map => map.MapFrom(vm => vm.Id));
+            CreateMap<User, SlimUserResponse>().ForMember(au => au.Id, map => map.MapFrom(vm => vm.Id));
             CreateMap<User, SlimUserResponse>().ForMember(au => au.FirstName, map => map.MapFrom(vm => vm.Firstname));
             CreateMap<User, SlimUserResponse>().ForMember(au => au.LastName, map => map.MapFrom(vm => vm.Lastname));
-            CreateMap<User, SlimUserResponse>().ForMember(au => au.Residence, map => map.MapFrom(vm => vm.ResidenceLocation));
+            CreateMap<User, SlimUserResponse>().ForMember(au => au.ResidenceLocation, map => map.MapFrom(vm => vm.ResidenceLocation));
             CreateMap<User, SlimUserResponse>().ForMember(au => au.Avi, map => map.MapFrom(vm => vm.Avi));
         }
 
