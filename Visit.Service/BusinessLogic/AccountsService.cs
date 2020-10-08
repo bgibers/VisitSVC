@@ -165,7 +165,44 @@ namespace Visit.Service.BusinessLogic
                     FkUser = user
                 };
                 
-                _visitContext.UserLocation.Add(userLocation);
+                var existingEntry = _visitContext.UserLocation.SingleOrDefault(e =>
+                    e.FkUser == user && e.FkLocation == location && e.Status == i.Value);
+
+                if (existingEntry != null)
+                {
+                    existingEntry.Status = i.Value;
+                    _visitContext.UserLocation.Update(existingEntry);
+                    userLocation = existingEntry;
+                }
+                else
+                {
+                    _visitContext.UserLocation.Add(userLocation);
+                }
+
+                var caption = "";
+
+                if (i.Value == "toVisit")
+                {
+                    caption = $"Wants to venture {location.LocationName}. Any thoughts?";
+                }
+                else
+                {
+                    caption = $"Has visited {location.LocationName}. Ask them about it!";
+                }
+                
+                var post = new Post
+                {
+                    PostContentLink = $"",
+                    PostCaption = caption,
+                    FkUser = user
+                };
+                _visitContext.Post.Add(post);
+
+                _visitContext.PostUserLocation.Add(new PostUserLocation
+                {
+                    FkLocation = userLocation,
+                    FkPost = post
+                });
             }
             
             return  await _visitContext.SaveChangesAsync();
