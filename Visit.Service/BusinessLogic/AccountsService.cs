@@ -180,19 +180,22 @@ namespace Visit.Service.BusinessLogic
                 }
 
                 var caption = "";
-
+                PostType postType;
                 if (i.Value == "toVisit")
                 {
                     caption = $"Wants to venture {location.LocationName}. Any thoughts?";
+                    postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "toVisit");
                 }
                 else
                 {
                     caption = $"Has visited {location.LocationName}. Ask them about it!";
+                    postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "visited");
                 }
                 
                 var post = new Post
                 {
                     PostContentLink = $"",
+                    FkPostType = postType,
                     PostCaption = caption,
                     FkUser = user
                 };

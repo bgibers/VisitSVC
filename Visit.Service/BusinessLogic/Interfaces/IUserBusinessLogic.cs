@@ -23,6 +23,6 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        Task<List<SlimUserResponse>> FindUserBySearchCriteria(string query);
+        List<SlimUserResponse> FindUserBySearchCriteria(string query);
     }
 }

@@ -63,12 +63,12 @@ namespace Visit.Service.BusinessLogic
             return userScrubbed;
         }
 
-        public async Task<UserResponse> GetUserByEmail(string email)
+        public Task<UserResponse> GetUserByEmail(string email)
         {
             throw new System.NotImplementedException();
         }
 
-        public async Task<List<SlimUserResponse>> FindUserBySearchCriteria(string query)
+        public List<SlimUserResponse> FindUserBySearchCriteria(string query)
         {
             var queries = query.Split(' ');
             var users = _userManager.Users

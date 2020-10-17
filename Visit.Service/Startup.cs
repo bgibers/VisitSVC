@@ -156,6 +156,7 @@ namespace Visit.Service
             services.AddTransient<IBlobStorageBusinessLogic, BlobStorageBusinessLogic>();
             services.AddTransient<IUserBusinessLogic, UserBusinessLogic>();
             services.AddTransient<IAccountsService, AccountsService>();
+            services.AddTransient<IDevopsService, DevopsService>();
 
             // Cors policy
             services.AddCors(options =>

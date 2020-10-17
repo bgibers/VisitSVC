@@ -55,9 +55,9 @@ namespace Visit.Service.ApiControllers
         /// <returns></returns>
         [HttpGet("search/{query}")]
         [Authorize(Policy = "VisitUser")]
-        public async Task<ActionResult<List<SlimUserResponse>>> Search(string query)
+        public List<SlimUserResponse> Search(string query)
         {
-            return await _userBusinessLogic.FindUserBySearchCriteria(query);
+            return _userBusinessLogic.FindUserBySearchCriteria(query);
         }
     }
 }
