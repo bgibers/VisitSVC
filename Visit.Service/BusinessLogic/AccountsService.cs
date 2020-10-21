@@ -197,6 +197,7 @@ namespace Visit.Service.BusinessLogic
                     PostContentLink = $"",
                     FkPostType = postType,
                     PostCaption = caption,
+                    PostTime = DateTime.UtcNow,
                     FkUser = user
                 };
                 _visitContext.Post.Add(post);

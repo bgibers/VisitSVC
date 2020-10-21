@@ -93,6 +93,7 @@ namespace Visit.Service.BusinessLogic
                 PostContentLink = "testlinktest",
                 PostCaption = location.FkLocation.LocationCode,
                 ReviewRating = 5,
+                PostTime = DateTime.UtcNow,
                 FkUser = location.FkUser
             };
             _visitContext.Post.Add(post);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Visit.DataAccess.Models
 {
@@ -17,6 +18,9 @@ namespace Visit.DataAccess.Models
         public string FkUserId { get; set; }
         public string PostContentLink { get; set; }
         public string PostCaption { get; set; }
+        
+        public DateTime? PostTime { get; set; }
+
         public int? ReviewRating { get; set; }
 
         public virtual PostType FkPostType { get; set; }

@@ -146,6 +146,10 @@ namespace Visit.DataAccess.EntityFramework
 
                 entity.Property(e => e.PostId).HasColumnType("int(11)");
 
+                entity.Property(e => e.PostTime)
+                    .HasColumnName("PostTime")
+                    .HasColumnType("datetime");
+                
                 entity.Property(e => e.FkPostTypeId)
                     .HasColumnName("FK_Post_TypeId")
                     .HasColumnType("int(11)");
