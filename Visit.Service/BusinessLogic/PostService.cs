@@ -23,10 +23,14 @@ namespace Visit.Service.BusinessLogic
             throw new System.NotImplementedException();
         }
 
-        public async Task<PaginatedList<Post>> GetList(int? pageNumber, string sortField, string sortOrder)
+        public async Task<PaginatedList<Post>> GetPostsByPage(int? pageNumber)
         {
             int pageSize = 50;
-            var postList = _context.Post.OrderByDynamic(sortField, sortOrder.ToUpper());
+            var postList = _context.Post.OrderByDynamic("PostTime", "OrderByDescending")
+                .Include(p => p.FkUser)
+                .Include(p => p.FkPostType)
+                .Include(p => p.PostUserLocation);
+            
             return await PaginatedList<Post>.CreateAsync(postList.AsNoTracking(), pageNumber ?? 1, pageSize);
         }
     }

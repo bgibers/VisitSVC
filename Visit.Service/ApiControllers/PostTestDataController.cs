@@ -7,9 +7,9 @@ using Visit.Service.BusinessLogic;
 
 namespace Visit.Service.ApiControllers
 {
-    [Route("api/TestData")]
+    [Route("TestData")]
     [ApiController]
-    [Authorize(Policy = "VisitUser")]
+//    [Authorize(Policy = "VisitUser")]
     public class PostTestDataController
     {
         private readonly PostTestDataService _dataService;

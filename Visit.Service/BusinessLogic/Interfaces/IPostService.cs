@@ -9,7 +9,12 @@ namespace Visit.Service.BusinessLogic.Interfaces
     {
         Task<List<Post>> GetPostsByUser(string userId);
         
-        Task<PaginatedList<Post>> GetList(int? pageNumber, string sortField, string sortOrder);
+        /// <summary>
+        /// Get 50 posts by page number. Sorting by date in desc order 
+        /// </summary>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
+        Task<PaginatedList<Post>> GetPostsByPage(int? pageNumber);
 
     }
 }
