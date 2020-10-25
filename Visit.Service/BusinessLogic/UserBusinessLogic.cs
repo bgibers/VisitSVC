@@ -83,14 +83,7 @@ namespace Visit.Service.BusinessLogic
             // set a default value of empty string if not found
             foreach (var user in users)
             {
-                BlobClient aviBlob;
-                try
-                {
-                    user.Avi = _blobStorage.GetBlob(user.Avi)?.Uri.ToString() ?? "";
-                } catch
-                {
-                    user.Avi = null;
-                }
+                user.Avi = GetUserAvi(user.Avi);
             }
             
             return _mapper.Map<List<SlimUserResponse>>(users.ToList());
@@ -99,7 +92,21 @@ namespace Visit.Service.BusinessLogic
         public async Task<SlimUserResponse> GetSlimUser(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
+            
+            user.Avi = GetUserAvi(user.Avi);
+
             return _mapper.Map<SlimUserResponse>(user);
+        }
+
+        public string GetUserAvi(string aviLocation)
+        {
+            try
+            {
+                return _blobStorage.GetBlob(aviLocation)?.Uri.ToString() ?? "";
+            } catch
+            {
+                return null;
+            }
         }
     }
 }

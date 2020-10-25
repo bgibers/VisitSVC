@@ -41,6 +41,21 @@ namespace Visit.Service.Mappings
             CreateMap<User, UserResponse>().ForMember(au => au.Title, map => map.MapFrom(vm => vm.Title));
             CreateMap<User, UserResponse>().ForMember(au => au.UserLocations, map => map.MapFrom(vm => vm.UserLocation));
 
+            
+            CreateMap<UserResponse, User>().ForMember(au => au.Id, map => map.MapFrom(vm => vm.UserId));
+            CreateMap<UserResponse, User>().ForMember(au => au.Firstname, map => map.MapFrom(vm => vm.Firstname));
+            CreateMap<UserResponse, User>().ForMember(au => au.Lastname, map => map.MapFrom(vm => vm.Lastname));
+            CreateMap<UserResponse, User>().ForMember(au => au.Email, map => map.MapFrom(vm => vm.Email));
+            CreateMap<UserResponse, User>().ForMember(au => au.Birthday, map => map.MapFrom(vm => vm.Birthday));
+            CreateMap<UserResponse, User>().ForMember(au => au.BirthLocation, map => map.MapFrom(vm => vm.BirthLocation));
+            CreateMap<UserResponse, User>().ForMember(au => au.ResidenceLocation, map => map.MapFrom(vm => vm.ResidenceLocation));
+            CreateMap<UserResponse, User>().ForMember(au => au.Avi, map => map.MapFrom(vm => vm.Avi));
+            CreateMap<UserResponse, User>().ForMember(au => au.FacebookId, map => map.MapFrom(vm => vm.FacebookId));
+            CreateMap<UserResponse, User>().ForMember(au => au.Post, map => map.MapFrom(vm => vm.Posts));
+            CreateMap<UserResponse, User>().ForMember(au => au.UserLocation, map => map.MapFrom(vm => vm.UserLocations));
+            CreateMap<UserResponse, User>().ForMember(au => au.Education, map => map.MapFrom(vm => vm.Education));
+            CreateMap<UserResponse, User>().ForMember(au => au.Title, map => map.MapFrom(vm => vm.Title));
+      
             CreateMap<User, SlimUserResponse>().ForMember(au => au.Id, map => map.MapFrom(vm => vm.Id));
             CreateMap<User, SlimUserResponse>().ForMember(au => au.FirstName, map => map.MapFrom(vm => vm.Firstname));
             CreateMap<User, SlimUserResponse>().ForMember(au => au.LastName, map => map.MapFrom(vm => vm.Lastname));
