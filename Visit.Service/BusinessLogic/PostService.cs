@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Visit.DataAccess.EntityFramework;
@@ -29,7 +30,8 @@ namespace Visit.Service.BusinessLogic
             var postList = _context.Post.OrderByDynamic("PostTime", "OrderByDescending")
                 .Include(p => p.FkUser)
                 .Include(p => p.FkPostType)
-                .Include(p => p.PostUserLocation);
+                .Include(p => p.PostUserLocation)
+                .ThenInclude(p => p.FkLocation);
             
             return await PaginatedList<Post>.CreateAsync(postList.AsNoTracking(), pageNumber ?? 1, pageSize);
         }
