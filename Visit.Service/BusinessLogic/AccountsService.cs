@@ -121,7 +121,8 @@ namespace Visit.Service.BusinessLogic
         {
             var currentUser = await _userManager.FindByNameAsync(claim.Value);
             var fileName = Guid.NewGuid();
-            if (!await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image, fileName))
+            var res = await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image, fileName);
+            if (res == new Uri(""))
             {
                 _logger.LogError("User " + currentUser.UserName + " Avi not updated");
                 return new UploadImageResponse(false, new ImageErrors()
@@ -130,8 +131,8 @@ namespace Visit.Service.BusinessLogic
                     UploadError = "User " + currentUser.UserName + " avi could not be uploaded"
                 });
             }
-            
-            currentUser.Avi = $"{currentUser.Id}/ProfilePics/{fileName}.jpg";
+
+            currentUser.Avi = res.ToString();
             
             var result = await _userManager.UpdateAsync(currentUser);
             if (!result.Succeeded)

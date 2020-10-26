@@ -69,7 +69,7 @@ namespace Visit.Service.BusinessLogic.BlobStorage
         }
 
         /// <inheritdoc />
-        public async Task<bool> UploadBlob(string blobPath, IFormFile file, Guid fileName)
+        public async Task<Uri> UploadBlob(string blobPath, IFormFile file, Guid fileName)
         {
             try
             {
@@ -79,16 +79,16 @@ namespace Visit.Service.BusinessLogic.BlobStorage
                 };
                 using (var stream = file.OpenReadStream())
                 {
-                    await blob.UploadAsync(stream, httpHeaders);
+                   await blob.UploadAsync(stream, httpHeaders);
                 }
 
                 _logger.LogInformation($"Blob at {blobPath} uploaded successfully");
-                return true;
+                return blob.Uri;
             }
             catch (Exception e)
             {
                 _logger.LogError($"Blob: {JsonConvert.SerializeObject(file)} at {blobPath} could not upload: {e}");
-                return false;
+                return new Uri("");
             }
         }
 

@@ -17,14 +17,7 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// <param name="id"></param>
         /// <returns></returns>
         Task<SlimUserResponse> GetSlimUser(string id);
-
-        /// <summary>
-        /// Get the avi location from blob storage
-        /// </summary>
-        /// <param name="aviLocation"></param>
-        /// <returns></returns>
-        string GetUserAvi(string aviLocation);
-
+        
         /// <summary>
         /// For searching 
         /// </summary>

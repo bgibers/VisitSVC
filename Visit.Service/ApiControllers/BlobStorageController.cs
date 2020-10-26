@@ -26,9 +26,9 @@ namespace Visit.Service.ApiControllers
         }
 
         [HttpPost("UploadFile")]
-        public async Task<IActionResult> UploadFile(string filePath, IFormFile asset)
+        public async Task<Uri> UploadFile(string filePath, IFormFile asset)
         {
-            return Ok(await _blobStorageBusinessLogic.UploadBlob(filePath, asset, Guid.NewGuid()));
+            return await _blobStorageBusinessLogic.UploadBlob(filePath, asset, Guid.NewGuid());
         }
 
         [HttpGet("DownloadFile/{fileName}")]

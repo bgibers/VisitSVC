@@ -80,12 +80,6 @@ namespace Visit.Service.BusinessLogic
                 users = users.Where(u => u.Lastname.ToLower().Contains(queries[1].ToLower()));
             }
             
-            // set a default value of empty string if not found
-            foreach (var user in users)
-            {
-                user.Avi = GetUserAvi(user.Avi);
-            }
-            
             return _mapper.Map<List<SlimUserResponse>>(users.ToList());
         }
 
@@ -93,20 +87,7 @@ namespace Visit.Service.BusinessLogic
         {
             var user = await _userManager.FindByIdAsync(id);
             
-            user.Avi = GetUserAvi(user.Avi);
-
             return _mapper.Map<SlimUserResponse>(user);
-        }
-
-        public string GetUserAvi(string aviLocation)
-        {
-            try
-            {
-                return _blobStorage.GetBlob(aviLocation)?.Uri.ToString() ?? "";
-            } catch
-            {
-                return null;
-            }
         }
     }
 }
