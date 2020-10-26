@@ -34,8 +34,8 @@ namespace Visit.Service.BusinessLogic.BlobStorage
 
             _logger = logger;
             _storageContainer = new BlobContainerClient(config.Value.StorageConnection, config.Value.Container);
-            _storageContainer.SetAccessPolicy(PublicAccessType.Blob);
             _storageContainer.CreateIfNotExists();
+            _storageContainer.SetAccessPolicy(PublicAccessType.Blob);
 
             _accountName = _storageContainer.AccountName;
         }
