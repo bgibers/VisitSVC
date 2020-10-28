@@ -43,19 +43,9 @@ namespace Visit.Service.BusinessLogic
                     .ThenInclude(l => l.FkLocation)
                 .SingleOrDefaultAsync(u => u.Id == id);
             
-            // set a default value of empty string if not found
-            BlobClient aviBlob;
-            try
-            {
-                aviBlob = _blobStorage.GetBlob(user.Avi);
-            } catch
-            {
-                aviBlob = null;
-            }
-            
             // take all sensitve data out
             var userScrubbed = _mapper.Map<UserResponse>(user);
-            userScrubbed.Avi = aviBlob?.Uri.ToString() ?? "";
+            userScrubbed.Avi = user.Avi ?? "";
             userScrubbed.FollowerCount = user.UserFollowingFkFollowUser.Count;
             userScrubbed.FollowingCount = user.UserFollowingFkMainUser.Count;
             userScrubbed.UserId = id;

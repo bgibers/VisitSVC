@@ -122,7 +122,7 @@ namespace Visit.Service.BusinessLogic
             var currentUser = await _userManager.FindByNameAsync(claim.Value);
             var fileName = Guid.NewGuid();
             var res = await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image, fileName);
-            if (res == new Uri(""))
+            if (string.IsNullOrEmpty(res.ToString()))
             {
                 _logger.LogError("User " + currentUser.UserName + " Avi not updated");
                 return new UploadImageResponse(false, new ImageErrors()

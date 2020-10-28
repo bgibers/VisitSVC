@@ -80,10 +80,10 @@ namespace Visit.Service.BusinessLogic.BlobStorage
                 using (var stream = file.OpenReadStream())
                 {
                    await blob.UploadAsync(stream, httpHeaders);
+                   _logger.LogInformation($"Blob at {blobPath} uploaded successfully");
+                   return blob.Uri;
                 }
-
-                _logger.LogInformation($"Blob at {blobPath} uploaded successfully");
-                return blob.Uri;
+                
             }
             catch (Exception e)
             {
