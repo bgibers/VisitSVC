@@ -4,13 +4,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 using Visit.DataAccess.Auth;
-using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.Interfaces;
-using Visit.Service.Models;
 using Visit.Service.Models.Requests;
-using Visit.Service.Models.Responses;
 
 namespace Visit.Service.ApiControllers
 {

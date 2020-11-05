@@ -201,6 +201,7 @@ namespace Visit.Service.BusinessLogic
                     PostTime = DateTime.UtcNow,
                     FkUser = user
                 };
+                
                 _visitContext.Post.Add(post);
 
                 _visitContext.PostUserLocation.Add(new PostUserLocation

@@ -1,12 +1,16 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models;
+using Visit.Service.Models.Requests;
+using Visit.Service.Models.Responses;
 
 namespace Visit.Service.ApiControllers
 {
@@ -26,11 +30,26 @@ namespace Visit.Service.ApiControllers
         /// </summary>
         /// <param name="page"></param>
         /// <returns></returns>
-        [HttpGet("posts/{page}")]
+        [HttpGet("{page}")]
         [ProducesResponseType(200)]
         public async Task<PaginatedList<Post>> GetPostsForPage(int page)
         { 
             return await _postService.GetPostsByPage(page);
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="post"></param>
+        /// <param name="image"></param>
+        /// <returns></returns>
+        [HttpPost("new")]
+        [ProducesResponseType(200)]
+        public async Task<NewPostResponse> AddNewPost([FromBody] CreatePostRequest post, 
+            [FromForm] IFormFile? image = null)
+        { 
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            return await _postService.CreatePost(user, post, image);
         }
     }
 }
