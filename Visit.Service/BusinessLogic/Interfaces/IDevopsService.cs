@@ -14,6 +14,6 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// Adds a new post type for on the fly development
         /// </summary>
         /// <returns></returns>
-        Task<bool> AddNewPostType();
+        Task<bool> AddNewPostType(string type);
     }
 }

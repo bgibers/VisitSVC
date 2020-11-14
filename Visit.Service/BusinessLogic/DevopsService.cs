@@ -18,15 +18,20 @@ namespace Visit.Service.BusinessLogic
         {
             await _visitContext.PostType.AddAsync(new PostType() {Type = "toVisit"});
             await _visitContext.PostType.AddAsync(new PostType() {Type = "visited"});
+            await _visitContext.PostType.AddAsync(new PostType() {Type = "text"});
+            await _visitContext.PostType.AddAsync(new PostType() {Type = "image"});
 
             await _visitContext.SaveChangesAsync();
 
             return true;
         }
 
-        public async Task<bool> AddNewPostType()
+        public async Task<bool> AddNewPostType(string type)
         {
-            throw new System.NotImplementedException();
+            await _visitContext.PostType.AddAsync(new PostType() {Type = type});
+            await _visitContext.SaveChangesAsync();
+
+            return true;
         }
     }
 }

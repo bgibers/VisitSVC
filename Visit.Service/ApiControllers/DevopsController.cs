@@ -21,5 +21,11 @@ namespace Visit.Service.ApiControllers
             return Ok(await _devopsService.AddPostTypes());
         }
         
+        [HttpPost("new/{type}")]
+        public async Task<IActionResult> AddNewPostType(string type)
+        {
+            return Ok(await _devopsService.AddNewPostType(type));
+        }
+        
     }
 }
