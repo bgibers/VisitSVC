@@ -27,7 +27,7 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// <param name="postRequest"></param>
         /// <param name="image"></param>
         /// <returns></returns>
-        Task<NewPostResponse> CreatePost(Claim claim, CreatePostRequest postRequest, IFormFile? image);
+        Task<NewPostResponse> CreatePost(Claim claim, CreatePostRequest postRequest);
 
     }
 }

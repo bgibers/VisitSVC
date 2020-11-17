@@ -45,11 +45,10 @@ namespace Visit.Service.ApiControllers
         /// <returns></returns>
         [HttpPost("new")]
         [ProducesResponseType(200)]
-        public async Task<NewPostResponse> AddNewPost([FromBody] CreatePostRequest post, 
-            [FromForm] IFormFile? image = null)
+        public async Task<NewPostResponse> AddNewPost([FromForm] CreatePostRequest post)
         { 
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
-            return await _postService.CreatePost(user, post, image);
+            return await _postService.CreatePost(user, post);
         }
     }
 }

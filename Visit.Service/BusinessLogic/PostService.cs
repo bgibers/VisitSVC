@@ -48,7 +48,7 @@ namespace Visit.Service.BusinessLogic
                 .Include(p => p.FkUser)
                 .Include(p => p.FkPostType)
                 .Include(p => p.PostUserLocation)
-                .ThenInclude(p => p.FkLocation);
+                .ThenInclude(p => p.FkLocation.FkLocation);
 
             foreach (var post in postList)
             {
@@ -60,7 +60,7 @@ namespace Visit.Service.BusinessLogic
             return await PaginatedList<Post>.CreateAsync(postList.AsNoTracking(), pageNumber ?? 1, pageSize);
         }
 
-        public async Task<NewPostResponse> CreatePost(Claim claim, CreatePostRequest postRequest, IFormFile? image)
+        public async Task<NewPostResponse> CreatePost(Claim claim, CreatePostRequest postRequest)
         {
             try
             {
@@ -69,10 +69,10 @@ namespace Visit.Service.BusinessLogic
                 var postType = _visitContext.PostType.SingleOrDefault(t => t.Type == postRequest.PostType);
 
                 Uri res = null;
-                if (image != null)
+                if (postRequest.Image != null)
                 {
                     var fileName = Guid.NewGuid();
-                    res = await _blobStorage.UploadBlob($"{user.Id}/posts/{location.LocationName}", image, fileName);
+                    res = await _blobStorage.UploadBlob($"{user.Id}/posts/{location.LocationName}", postRequest.Image, fileName);
                     if (string.IsNullOrEmpty(res.ToString()))
                     {
                         _logger.LogError("User " + user.UserName + " post image not updated");
