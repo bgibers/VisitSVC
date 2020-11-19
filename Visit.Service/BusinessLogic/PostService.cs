@@ -84,17 +84,6 @@ namespace Visit.Service.BusinessLogic
                     }
                 }
                 
-                var post = new Post
-                {
-                    PostContentLink = res?.ToString() ?? "",
-                    FkPostType = postType,
-                    PostCaption = postRequest.Caption,
-                    PostTime = DateTime.UtcNow,
-                    FkUser = user
-                };
-
-                _visitContext.Post.Add(post);
-
                 var userLocation = _visitContext.UserLocation.SingleOrDefault(e =>
                     e.FkUser == user && e.FkLocation == location);
 
@@ -108,7 +97,18 @@ namespace Visit.Service.BusinessLogic
                         FkUser = user
                     });
                 }
+                
+                var post = new Post
+                {
+                    PostContentLink = res?.ToString() ?? "",
+                    FkPostType = postType,
+                    PostCaption = postRequest.Caption,
+                    PostTime = DateTime.UtcNow,
+                    FkUser = user
+                };
 
+                _visitContext.Post.Add(post);
+                
                 _visitContext.PostUserLocation.Add(new PostUserLocation
                 {
                     FkLocation = userLocation,
