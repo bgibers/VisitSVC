@@ -65,8 +65,8 @@ namespace Visit.Service.BusinessLogic
             try
             {
                 var user = await _userManager.FindByNameAsync(claim.Value);
-                var location = _visitContext.Location.Single(f => f.LocationCode == postRequest.LocationCode);
-                var postType = _visitContext.PostType.SingleOrDefault(t => t.Type == postRequest.PostType);
+                var location = await _visitContext.Location.SingleAsync(f => f.LocationCode == postRequest.LocationCode);
+                var postType = await _visitContext.PostType.SingleOrDefaultAsync(t => t.Type == postRequest.PostType);
 
                 Uri res = null;
                 if (postRequest.Image != null)
@@ -89,7 +89,7 @@ namespace Visit.Service.BusinessLogic
 
                 if (userLocation == null)
                 {
-                    _visitContext.UserLocation.Add(new UserLocation
+                    await _visitContext.UserLocation.AddAsync(new UserLocation
                     {
                         Status = "toVisit",
                         Venue = "",
@@ -107,9 +107,9 @@ namespace Visit.Service.BusinessLogic
                     FkUser = user
                 };
 
-                _visitContext.Post.Add(post);
+                await _visitContext.Post.AddAsync(post);
                 
-                _visitContext.PostUserLocation.Add(new PostUserLocation
+                await _visitContext.PostUserLocation.AddAsync(new PostUserLocation
                 {
                     FkLocation = userLocation,
                     FkPost = post
