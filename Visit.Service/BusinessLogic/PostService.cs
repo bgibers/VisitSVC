@@ -84,18 +84,19 @@ namespace Visit.Service.BusinessLogic
                     }
                 }
                 
-                var userLocation = _visitContext.UserLocation.SingleOrDefault(e =>
+                var userLocation = await _visitContext.UserLocation.SingleOrDefaultAsync(e =>
                     e.FkUser == user && e.FkLocation == location);
 
                 if (userLocation == null)
                 {
-                    await _visitContext.UserLocation.AddAsync(new UserLocation
+                    userLocation = new UserLocation
                     {
                         Status = "toVisit",
                         Venue = "",
                         FkLocation = location,
                         FkUser = user
-                    });
+                    };
+                    await _visitContext.UserLocation.AddAsync(userLocation);
                 }
                 
                 var post = new Post
