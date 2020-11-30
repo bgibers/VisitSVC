@@ -16,15 +16,15 @@ namespace Visit.Service.ApiControllers
         }
         
         [HttpPost("post_types")]
-        public async Task<IActionResult> AddPostTypes()
+        public async Task<ActionResult<bool>> AddPostTypes()
         {
-            return Ok(await _devopsService.AddPostTypes());
+            return await _devopsService.AddPostTypes();
         }
         
         [HttpPost("new/{type}")]
-        public async Task<IActionResult> AddNewPostType(string type)
+        public async Task<ActionResult<bool>> AddNewPostType(string type)
         {
-            return Ok(await _devopsService.AddNewPostType(type));
+            return await _devopsService.AddNewPostType(type);
         }
         
     }

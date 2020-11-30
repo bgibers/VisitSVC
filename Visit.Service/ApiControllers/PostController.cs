@@ -32,7 +32,7 @@ namespace Visit.Service.ApiControllers
         /// <returns></returns>
         [HttpGet("{page}")]
         [ProducesResponseType(200)]
-        public async Task<PaginatedList<Post>> GetPostsForPage(int page)
+        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPage(int page)
         { 
             return await _postService.GetPostsByPage(page);
         }
@@ -45,10 +45,65 @@ namespace Visit.Service.ApiControllers
         /// <returns></returns>
         [HttpPost("new")]
         [ProducesResponseType(200)]
-        public async Task<NewPostResponse> AddNewPost([FromForm] CreatePostRequest post)
+        public async Task<ActionResult<NewPostResponse>> AddNewPost([FromForm] CreatePostRequest post)
         { 
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
             return await _postService.CreatePost(user, post);
         }
+
+        #region Likes and comments
+
+        /// <summary>
+        /// LIke a post by its Id
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [HttpPost("like/{postId}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> LikePost(string postId)
+        { 
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            return await _postService.LikePost(user, postId);
+        }
+        
+        /// <summary>
+        /// Get likes for a post by its Id
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [HttpGet("likes/get/{postId}")]
+        [ProducesResponseType(200)]
+        public ActionResult<List<LikeForPost>> GetAllLikesForPost(string postId)
+        { 
+            return _postService.GetLikesForPost(postId);
+        }
+
+        /// <summary>
+        /// Comment on a post by its Id
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="comment"></param>
+        /// <returns></returns>
+        [HttpPost("comment/{postId}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> CommentOnPost(string postId, [FromBody] string comment)
+        { 
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            return await _postService.CommentOnPost(user, postId, comment);
+        }
+        
+        /// <summary>
+        /// Get comments for a post by its ID
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [HttpGet("comments/get/{postId}")]
+        [ProducesResponseType(200)]
+        public ActionResult<List<CommentForPost>> GetAllCommentsForPost(string postId)
+        { 
+            return _postService.GetCommentsForPost(postId);
+        }
+
+        #endregion
     }
 }

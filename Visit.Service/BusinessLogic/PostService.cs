@@ -41,30 +41,62 @@ namespace Visit.Service.BusinessLogic
             throw new System.NotImplementedException();
         }
 
-        public async Task<PaginatedList<Post>> GetPostsByPage(int? pageNumber)
+        public async Task<PaginatedList<PostApi>> GetPostsByPage(int? pageNumber)
         {
             int pageSize = 50;
+            var postApiList = new List<PostApi>();
+            
             var postList = _visitContext.Post.OrderByDynamic("PostTime", "OrderByDescending")
                 .Include(p => p.FkUser)
                 .Include(p => p.FkPostType)
+                .Include(p => p.PostComment)
+                .Include(p => p.Like)
                 .Include(p => p.PostUserLocation)
                 .ThenInclude(p => p.FkLocation.FkLocation);
 
-            foreach (var post in postList)
+            var postPaginatedList = await PaginatedList<Post>.CreateAsync(postList.AsNoTracking(), pageNumber ?? 1, pageSize);
+            
+            // We should only loop through the items we need to loop through. All of this context shit needs to be cleaned up
+            // don't think this is the cleanest
+            foreach (var post in postPaginatedList.Items)
             {
-                // todo properly return userResponse here instead of scrubbing the data
-                var temp = _mapper.Map<UserResponse>(post.FkUser);
-                post.FkUser = _mapper.Map<User>(temp);
+
+                var commentCount = post.PostComment.Count;
+                var likeCount = post.Like.Count;
+
+                postApiList.Add(new PostApi()
+                {
+                    PostId = post.PostId,
+                    FkPostTypeId = post.FkPostTypeId,
+                    FkUserId = post.FkUserId,
+                    PostContentLink = post.PostContentLink,
+                    PostCaption = post.PostCaption,
+                    PostTime = post.PostTime,
+                    ReviewRating = post.ReviewRating,
+                    FkPostType = post.FkPostType,
+                    FkUser = _mapper.Map<UserResponse>(post.FkUser),
+                    Location = post.PostUserLocation.SingleOrDefault()?.FkLocation.FkLocation,
+                    CommentCount = commentCount,
+                    LikeCount = likeCount
+                });
             }
-
-            return await PaginatedList<Post>.CreateAsync(postList.AsNoTracking(), pageNumber ?? 1, pageSize);
+            
+            return new PaginatedList<PostApi>()
+            {
+                HasNextPage = postPaginatedList.HasNextPage,
+                HasPreviousPage = postPaginatedList.HasPreviousPage,
+                Items = postApiList,
+                PageIndex = postPaginatedList.PageIndex,
+                TotalPages = postPaginatedList.TotalPages
+            };
         }
-
+        
         public async Task<NewPostResponse> CreatePost(Claim claim, CreatePostRequest postRequest)
         {
+            var user = await _userManager.FindByNameAsync(claim.Value);
+            
             try
             {
-                var user = await _userManager.FindByNameAsync(claim.Value);
                 var location = await _visitContext.Location.SingleAsync(f => f.LocationCode == postRequest.LocationCode);
                 var postType = await _visitContext.PostType.SingleOrDefaultAsync(t => t.Type == postRequest.PostType);
 
@@ -122,7 +154,120 @@ namespace Visit.Service.BusinessLogic
             }
             catch (Exception e)
             {
+                _logger.LogError($"Could not create new post for user {user.Id}: {e}");
                 return new NewPostResponse(false, null);
+            }
+        }
+
+        public async Task<bool> LikePost(Claim claim, string postId)
+        {
+            var user = await _userManager.FindByNameAsync(claim.Value);
+
+            try
+            {
+                var post = await _visitContext.Post.FindAsync(int.Parse(postId));
+
+                await _visitContext.Like.AddAsync(new Like()
+                {
+                    FkPost = post,
+                    FkUser = user
+                });
+                
+                await _visitContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"{user.Id} could not like postId {postId}: {e}");
+                return false;
+            }
+        }
+        
+        public async Task<bool> CommentOnPost(Claim claim, string postId, string comment)
+        {
+            var user = await _userManager.FindByNameAsync(claim.Value);
+
+            try
+            {
+                var post = await _visitContext.Post.FindAsync(int.Parse(postId));
+
+                await _visitContext.PostComment.AddAsync(new PostComment()
+                {
+                    FkPost = post,
+                    FkUserIdOfCommentingNavigation = user,
+                    DatetimeOfComments = DateTime.UtcNow,
+                    CommentText = comment
+                });
+                
+                await _visitContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"{user.Id} could not comment on postId {postId}: {e}");
+                return false;
+            }
+        }
+
+        public List<LikeForPost> GetLikesForPost(string postId)
+        {
+            try
+            {
+                var likes = _visitContext.Like.Where(l => l.FkPostId == int.Parse(postId))
+                    .Include(l => l.FkUser);
+
+                if (likes == null) return new List<LikeForPost>();
+                
+                List<LikeForPost> likesForPosts = new List<LikeForPost>();
+                
+                foreach (var like in likes)
+                {
+                    likesForPosts.Add(new LikeForPost()
+                    {
+                        FkPostId = like.FkPostId,
+                        LikeId = like.LikeId,
+                        User = _mapper.Map<User, SlimUserResponse>(like.FkUser)
+                    });
+                }
+
+                return likesForPosts;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Could not get likes for post {postId}");
+                return new List<LikeForPost>();
+            }
+        }
+        
+        public List<CommentForPost> GetCommentsForPost(string postId)
+        {
+            try
+            {
+                var comments = _visitContext.PostComment.Where(l => l.FkPostId == int.Parse(postId))
+                    .Include(l => l.FkUserIdOfCommentingNavigation);
+
+                if (comments == null) return new List<CommentForPost>();
+                
+                List<CommentForPost> commentsForPost = new List<CommentForPost>();
+                
+                foreach (var comment in comments)
+                {
+                    commentsForPost.Add(new CommentForPost()
+                    {
+                        FkPostId = comment.FkPostId,
+                        CommentId = comment.PostCommentId,
+                        Comment = comment.CommentText,
+                        Date = comment.DatetimeOfComments.ToUniversalTime(),
+                        User = _mapper.Map<User, SlimUserResponse>(comment.FkUserIdOfCommentingNavigation)
+                    });
+                }
+
+                return commentsForPost;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Could not get comments for post {postId}");
+                return new List<CommentForPost>();
             }
         }
     }
