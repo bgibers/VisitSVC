@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.BlobStorage;
@@ -64,21 +65,28 @@ namespace Visit.Service.BusinessLogic
                 var commentCount = post.PostComment.Count;
                 var likeCount = post.Like.Count;
 
-                postApiList.Add(new PostApi()
+                try
                 {
-                    PostId = post.PostId,
-                    FkPostTypeId = post.FkPostTypeId,
-                    FkUserId = post.FkUserId,
-                    PostContentLink = post.PostContentLink,
-                    PostCaption = post.PostCaption,
-                    PostTime = post.PostTime,
-                    ReviewRating = post.ReviewRating,
-                    FkPostType = post.FkPostType,
-                    FkUser = _mapper.Map<UserResponse>(post.FkUser),
-                    Location = post.PostUserLocation.SingleOrDefault()?.FkLocation.FkLocation,
-                    CommentCount = commentCount,
-                    LikeCount = likeCount
-                });
+                    postApiList.Add(new PostApi()
+                    {
+                        PostId = post.PostId,
+                        FkPostTypeId = post.FkPostTypeId,
+                        FkUserId = post.FkUserId,
+                        PostContentLink = post.PostContentLink ?? "",
+                        PostCaption = post.PostCaption,
+                        PostTime = post.PostTime,
+                        ReviewRating = post.ReviewRating,
+                        FkPostType = post.FkPostType,
+                        FkUser = _mapper.Map<UserResponse>(post.FkUser),
+                        Location = post.PostUserLocation.SingleOrDefault()?.FkLocation.FkLocation,
+                        CommentCount = commentCount,
+                        LikeCount = likeCount
+                    });
+                }
+                catch(Exception e)
+                {
+                    _logger.LogError($"Couldn't get post: {post.PostId} : {e}");
+                }
             }
             
             return new PaginatedList<PostApi>()
