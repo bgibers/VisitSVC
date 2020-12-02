@@ -169,12 +169,18 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<bool> LikePost(Claim claim, string postId)
         {
+            // TODO only like a post once
             var user = await _userManager.FindByNameAsync(claim.Value);
 
             try
             {
                 var post = await _visitContext.Post.FindAsync(int.Parse(postId));
 
+                if (_visitContext.Like.Any(l => l.FkPostId == int.Parse(postId) && l.FkUserId == user.Id))
+                {
+                    return false;
+                }
+                
                 await _visitContext.Like.AddAsync(new Like()
                 {
                     FkPost = post,
