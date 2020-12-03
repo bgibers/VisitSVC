@@ -34,7 +34,9 @@ namespace Visit.Service.ApiControllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPage(int page)
         { 
-            return await _postService.GetPostsByPage(page);
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            return await _postService.GetPostsByPage(user, page);
         }
         
         /// <summary>

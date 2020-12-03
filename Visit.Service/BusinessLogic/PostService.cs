@@ -42,8 +42,10 @@ namespace Visit.Service.BusinessLogic
             throw new System.NotImplementedException();
         }
 
-        public async Task<PaginatedList<PostApi>> GetPostsByPage(int? pageNumber)
+        public async Task<PaginatedList<PostApi>> GetPostsByPage(Claim claim, int? pageNumber)
         {
+            var user = await _userManager.FindByNameAsync(claim.Value);
+
             int pageSize = 50;
             var postApiList = new List<PostApi>();
             
@@ -65,6 +67,8 @@ namespace Visit.Service.BusinessLogic
                 var commentCount = post.PostComment.Count;
                 var likeCount = post.Like.Count;
 
+                bool likedByCurrentUser = _visitContext.Like.Any(l => l.FkPostId == post.PostId && l.FkUserId == user.Id);
+
                 try
                 {
                     postApiList.Add(new PostApi()
@@ -78,6 +82,7 @@ namespace Visit.Service.BusinessLogic
                         ReviewRating = post.ReviewRating,
                         FkPostType = post.FkPostType,
                         FkUser = _mapper.Map<UserResponse>(post.FkUser),
+                        LikedByCurrentUser = likedByCurrentUser,
                         Location = post.PostUserLocation.SingleOrDefault()?.FkLocation.FkLocation,
                         CommentCount = commentCount,
                         LikeCount = likeCount

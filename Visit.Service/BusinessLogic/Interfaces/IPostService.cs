@@ -16,35 +16,35 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// <summary>
         /// Get 50 posts by page number. Sorting by date in desc order 
         /// </summary>
+        /// <param name="user"></param>
         /// <param name="pageNumber"></param>
         /// <returns></returns>
-        Task<PaginatedList<PostApi>> GetPostsByPage(int? pageNumber);
+        Task<PaginatedList<PostApi>> GetPostsByPage(Claim user, int? pageNumber);
 
         /// <summary>
         /// Create a new post
         /// </summary>
-        /// <param name="claim"></param>
+        /// <param name="user"></param>
         /// <param name="postRequest"></param>
-        /// <param name="image"></param>
         /// <returns></returns>
-        Task<NewPostResponse> CreatePost(Claim claim, CreatePostRequest postRequest);
+        Task<NewPostResponse> CreatePost(Claim user, CreatePostRequest postRequest);
 
         /// <summary>
         /// Allows a user to like a post
         /// </summary>
-        /// <param name="claim"></param>
+        /// <param name="user"></param>
         /// <param name="postId"></param>
         /// <returns></returns>
-        Task<bool> LikePost(Claim claim, string postId);
+        Task<bool> LikePost(Claim user, string postId);
 
         /// <summary>
         /// Allows a user to comment on a post
         /// </summary>
-        /// <param name="claim"></param>
+        /// <param name="user"></param>
         /// <param name="postId"></param>
         /// <param name="comment"></param>
         /// <returns></returns>
-        Task<bool> CommentOnPost(Claim claim, string postId, string comment);
+        Task<bool> CommentOnPost(Claim user, string postId, string comment);
 
         /// <summary>
         /// Get all likes for post by postId
