@@ -9,7 +9,7 @@ namespace Visit.Service.Models
         public int FkPostId { get; set; }
 
         public string Comment { get; set; }
-        public DateTimeOffset Date { get; set; }
+        public DateTime Date { get; set; }
         public SlimUserResponse User { get; set; }
     }
 }
