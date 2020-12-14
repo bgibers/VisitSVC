@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.Interfaces;
@@ -105,7 +106,7 @@ namespace Visit.Service.ApiControllers
         /// <returns></returns>
         [HttpPost("comment/{postId}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<bool>> CommentOnPost(string postId, [FromBody] string comment)
+        public async Task<ActionResult<bool>> CommentOnPost(string postId, [FromBody] JToken comment)
         { 
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
             
@@ -114,7 +115,7 @@ namespace Visit.Service.ApiControllers
                 return Unauthorized();
             }
             
-            return await _postService.CommentOnPost(user, postId, comment);
+            return await _postService.CommentOnPost(user, postId, comment.ToString());
         }
         
         /// <summary>
