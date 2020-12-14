@@ -106,7 +106,7 @@ namespace Visit.Service.ApiControllers
         /// <returns></returns>
         [HttpPost("comment/{postId}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<bool>> CommentOnPost(string postId, [FromBody] JToken comment)
+        public async Task<ActionResult<bool>> CommentOnPost(string postId, [FromBody] CommentApi comment)
         { 
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
             
@@ -115,7 +115,7 @@ namespace Visit.Service.ApiControllers
                 return Unauthorized();
             }
             
-            return await _postService.CommentOnPost(user, postId, comment.ToString());
+            return await _postService.CommentOnPost(user, postId, comment.Comment);
         }
         
         /// <summary>
