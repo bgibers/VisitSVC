@@ -36,6 +36,11 @@ namespace Visit.Service.ApiControllers
         { 
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
 
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            
             return await _postService.GetPostsByPage(user, page);
         }
         
@@ -50,6 +55,12 @@ namespace Visit.Service.ApiControllers
         public async Task<ActionResult<NewPostResponse>> AddNewPost([FromForm] CreatePostRequest post)
         { 
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            
             return await _postService.CreatePost(user, post);
         }
 
@@ -65,6 +76,12 @@ namespace Visit.Service.ApiControllers
         public async Task<ActionResult<bool>> LikePost(string postId)
         { 
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            
             return await _postService.LikePost(user, postId);
         }
         
@@ -91,6 +108,12 @@ namespace Visit.Service.ApiControllers
         public async Task<ActionResult<bool>> CommentOnPost(string postId, [FromBody] string comment)
         { 
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            
             return await _postService.CommentOnPost(user, postId, comment);
         }
         

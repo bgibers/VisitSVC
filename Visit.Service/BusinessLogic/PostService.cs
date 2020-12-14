@@ -276,7 +276,7 @@ namespace Visit.Service.BusinessLogic
                         FkPostId = comment.FkPostId,
                         CommentId = comment.PostCommentId,
                         Comment = comment.CommentText,
-                        Date = comment.DatetimeOfComments.ToUniversalTime(),
+                        Date = comment.DatetimeOfComments,
                         User = _mapper.Map<User, SlimUserResponse>(comment.FkUserIdOfCommentingNavigation)
                     });
                 }
