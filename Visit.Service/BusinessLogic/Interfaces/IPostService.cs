@@ -18,8 +18,9 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// </summary>
         /// <param name="user"></param>
         /// <param name="pageNumber"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        Task<PaginatedList<PostApi>> GetPostsByPage(Claim user, int? pageNumber);
+        Task<PaginatedList<PostApi>> GetPostsByPage(Claim user, int? pageNumber, string filter = "");
 
         /// <summary>
         /// Create a new post

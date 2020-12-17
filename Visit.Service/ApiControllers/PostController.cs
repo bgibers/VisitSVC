@@ -25,15 +25,16 @@ namespace Visit.Service.ApiControllers
         {
             _postService = postService;
         }
-        
+
         /// <summary>
         /// Get posts by page. Each page is 50 results
         /// </summary>
         /// <param name="page"></param>
+        /// <param name="filter"></param>
         /// <returns></returns>
-        [HttpGet("{page}")]
+        [HttpGet("{page}/{filter}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPage(int page)
+        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPage(int page, string filter = "")
         { 
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -42,7 +43,7 @@ namespace Visit.Service.ApiControllers
                 return Unauthorized();
             }
             
-            return await _postService.GetPostsByPage(user, page);
+            return await _postService.GetPostsByPage(user, page, filter);
         }
         
         /// <summary>

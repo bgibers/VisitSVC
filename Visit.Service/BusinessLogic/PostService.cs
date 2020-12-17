@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Visit.DataAccess.EntityFramework;
@@ -42,20 +43,36 @@ namespace Visit.Service.BusinessLogic
             throw new System.NotImplementedException();
         }
 
-        public async Task<PaginatedList<PostApi>> GetPostsByPage(Claim claim, int? pageNumber)
+        public async Task<PaginatedList<PostApi>> GetPostsByPage(Claim claim, int? pageNumber, string filter = "")
         {
             var user = await _userManager.FindByNameAsync(claim.Value);
 
             int pageSize = 50;
             var postApiList = new List<PostApi>();
-            
-            var postList = _visitContext.Post.OrderByDynamic("PostTime", "OrderByDescending")
-                .Include(p => p.FkUser)
-                .Include(p => p.FkPostType)
-                .Include(p => p.PostComment)
-                .Include(p => p.Like)
-                .Include(p => p.PostUserLocation)
-                .ThenInclude(p => p.FkLocation.FkLocation);
+            IIncludableQueryable<Post, Location> postList;
+            if (string.IsNullOrEmpty(filter))
+            {
+               postList = _visitContext.Post.OrderByDynamic("PostTime", "OrderByDescending")
+                    .Include(p => p.FkUser)
+                    .Include(p => p.FkPostType)
+                    .Include(p => p.PostComment)
+                    .Include(p => p.Like)
+                    .Include(p => p.PostUserLocation)
+                    .ThenInclude(p => p.FkLocation.FkLocation);
+            }
+            else
+            {
+                postList = _visitContext.Post
+                    .Where(p=> p.PostUserLocation.First().FkLocation.FkLocation.LocationCode == filter)
+                    .OrderByDynamic("PostTime", "OrderByDescending")
+                        .Include(p => p.FkUser)
+                        .Include(p => p.FkPostType)
+                        .Include(p => p.PostComment)
+                        .Include(p => p.Like)
+                        .Include(p => p.PostUserLocation)
+                        .ThenInclude(p => p.FkLocation.FkLocation);
+            }
+    
 
             var postPaginatedList = await PaginatedList<Post>.CreateAsync(postList.AsNoTracking(), pageNumber ?? 1, pageSize);
             
