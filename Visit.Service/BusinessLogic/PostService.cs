@@ -29,7 +29,8 @@ namespace Visit.Service.BusinessLogic
         private readonly ILogger<PostService> _logger;
         private readonly IMapper _mapper;
 
-        public PostService(VisitContext visitContext, UserManager<User> userManager, IBlobStorageBusinessLogic blobStorage, ILogger<PostService> logger, IMapper mapper)
+        public PostService(VisitContext visitContext, UserManager<User> userManager, IBlobStorageBusinessLogic blobStorage, 
+            ILogger<PostService> logger, IMapper mapper)
         {
             _visitContext = visitContext;
             _userManager = userManager;
@@ -37,22 +38,41 @@ namespace Visit.Service.BusinessLogic
             _logger = logger;
             _mapper = mapper;
         }
-        
-        public async Task<List<Post>> GetPostsByUser(string userId)
-        {
-            throw new System.NotImplementedException();
-        }
 
-        public async Task<PaginatedList<PostApi>> GetPostsByPage(Claim claim, int? pageNumber, string filter = "")
+        public async Task<PaginatedList<PostApi>> GetPostsByPage(Claim claim, int? pageNumber, string filter = "", string userId = "")
         {
             var user = await _userManager.FindByNameAsync(claim.Value);
 
             int pageSize = 50;
             var postApiList = new List<PostApi>();
             IIncludableQueryable<Post, Location> postList;
-            if (string.IsNullOrEmpty(filter))
+            
+            if (string.IsNullOrEmpty(filter) && string.IsNullOrEmpty(userId))
             {
                postList = _visitContext.Post.OrderByDynamic("PostTime", "OrderByDescending")
+                    .Include(p => p.FkUser)
+                    .Include(p => p.FkPostType)
+                    .Include(p => p.PostComment)
+                    .Include(p => p.Like)
+                    .Include(p => p.PostUserLocation)
+                    .ThenInclude(p => p.FkLocation.FkLocation);
+            }
+            else if (string.IsNullOrEmpty(userId))
+            {
+                postList = _visitContext.Post
+                    .Where(p => p.PostUserLocation.First().FkLocation.FkLocation.LocationCode == filter)
+                    .OrderByDynamic("PostTime", "OrderByDescending")
+                        .Include(p => p.FkUser)
+                        .Include(p => p.FkPostType)
+                        .Include(p => p.PostComment)
+                        .Include(p => p.Like)
+                        .Include(p => p.PostUserLocation)
+                        .ThenInclude(p => p.FkLocation.FkLocation);
+            } else if (string.IsNullOrEmpty(filter))
+            {
+                postList = _visitContext.Post
+                    .Where(p => p.FkUserId == userId)
+                    .OrderByDynamic("PostTime", "OrderByDescending")
                     .Include(p => p.FkUser)
                     .Include(p => p.FkPostType)
                     .Include(p => p.PostComment)
@@ -63,14 +83,14 @@ namespace Visit.Service.BusinessLogic
             else
             {
                 postList = _visitContext.Post
-                    .Where(p=> p.PostUserLocation.First().FkLocation.FkLocation.LocationCode == filter)
+                    .Where(p => p.FkUserId == userId && p.PostUserLocation.First().FkLocation.FkLocation.LocationCode == filter)
                     .OrderByDynamic("PostTime", "OrderByDescending")
-                        .Include(p => p.FkUser)
-                        .Include(p => p.FkPostType)
-                        .Include(p => p.PostComment)
-                        .Include(p => p.Like)
-                        .Include(p => p.PostUserLocation)
-                        .ThenInclude(p => p.FkLocation.FkLocation);
+                    .Include(p => p.FkUser)
+                    .Include(p => p.FkPostType)
+                    .Include(p => p.PostComment)
+                    .Include(p => p.Like)
+                    .Include(p => p.PostUserLocation)
+                    .ThenInclude(p => p.FkLocation.FkLocation);
             }
     
 
@@ -197,7 +217,7 @@ namespace Visit.Service.BusinessLogic
             try
             {
                 var post = await _visitContext.Post.FindAsync(int.Parse(postId));
-
+                
                 if (_visitContext.Like.Any(l => l.FkPostId == int.Parse(postId) && l.FkUserId == user.Id))
                 {
                     return false;

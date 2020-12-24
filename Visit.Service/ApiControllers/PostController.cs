@@ -25,16 +25,15 @@ namespace Visit.Service.ApiControllers
         {
             _postService = postService;
         }
-
+        
         /// <summary>
         /// Get posts by page. Each page is 50 results
         /// </summary>
         /// <param name="page"></param>
-        /// <param name="filter"></param>
         /// <returns></returns>
-        [HttpGet("{page}/{filter}")]
+        [HttpGet("{page}")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPage(int page, string filter = "")
+        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPage(int page)
         { 
             var user = User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -43,14 +42,74 @@ namespace Visit.Service.ApiControllers
                 return Unauthorized();
             }
             
-            return await _postService.GetPostsByPage(user, page, filter);
+            return await _postService.GetPostsByPage(user, page, "", "");
+        }
+
+        /// <summary>
+        /// Get posts by page. Each page is 50 results
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="filter"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("{page}/{filter}/{userId}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPageWithFilterByUserId(int page, string filter = "", string userId = "")
+        { 
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            
+            return await _postService.GetPostsByPage(user, page, filter, userId);
+        }
+        
+        /// <summary>
+        /// Get posts by page. Each page is 50 results
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("{page}/user/{userId}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPageByUserId(int page, string userId = "")
+        { 
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            
+            return await _postService.GetPostsByPage(user, page, "", userId);
+        }
+        
+        /// <summary>
+        /// Get posts by page. Each page is 50 results
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpGet("{page}/filter/{filter}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPageWithFilter(int page, string filter = "")
+        { 
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            
+            return await _postService.GetPostsByPage(user, page, filter, "");
         }
         
         /// <summary>
         /// 
         /// </summary>
         /// <param name="post"></param>
-        /// <param name="image"></param>
         /// <returns></returns>
         [HttpPost("new")]
         [ProducesResponseType(200)]
