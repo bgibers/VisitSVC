@@ -127,7 +127,7 @@ namespace Visit.Service.BusinessLogic
                 }
                 catch(Exception e)
                 {
-                    _logger.LogError($"Couldn't get post: {post.PostId} : {e}");
+                    _logger.LogError($"Couldn't get post: {post.PostId} - {JsonConvert.SerializeObject(post)}: {e}");
                 }
             }
             
