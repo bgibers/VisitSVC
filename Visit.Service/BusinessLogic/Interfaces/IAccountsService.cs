@@ -19,6 +19,7 @@ namespace Visit.Service.BusinessLogic.Interfaces
         Task<CodeConfirmResult> ConfirmPasswordReset(SetNewPasswordWithCodeRequest model);
         Task<JwtToken> LoginUser(LoginApiRequest credentials);
         Task<UploadImageResponse> UpdateProfileImage(Claim user, IFormFile image);
+        Task<bool> UpdateAccountInfo(Claim user, UpdateUserInfoRequest request);
         Task<int> ChangeLocationStatus(Claim claim, MarkLocationsRequest request);
         Task<bool> EmailAlreadyTaken(string email);
     }

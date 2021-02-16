@@ -149,6 +149,22 @@ namespace Visit.Service.BusinessLogic
 
         }
 
+        public async Task<bool> UpdateAccountInfo(Claim claim, UpdateUserInfoRequest request)
+        {
+            var user = await _userManager.FindByNameAsync(claim.Value);
+
+            user.Education = request.Education;
+            user.Firstname = request.Firstname;
+            user.Lastname = request.Lastname;
+            user.BirthLocation = request.BirthLocation;
+            user.ResidenceLocation = request.ResidenceLocation;
+            user.Title = request.Title;
+
+            await _userManager.UpdateAsync(user);
+
+            return true;
+        }
+
         public async Task<int> ChangeLocationStatus(Claim claim, MarkLocationsRequest request)
         {
             var user = await _userManager.FindByNameAsync(claim.Value);

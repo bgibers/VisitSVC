@@ -93,6 +93,21 @@ namespace Visit.Service.ApiControllers
         }
         
         /// <summary>
+        /// Updates the logged in users info
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        [Authorize(Policy = "VisitUser")]
+        [HttpPost("update")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> UpdateAccountInfo(UpdateUserInfoRequest update)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            return await _accountsService.UpdateAccountInfo(user , update);
+        }
+        
+        /// <summary>
         /// Updates the status of world locations
         /// </summary>
         /// <param name="request"></param>
