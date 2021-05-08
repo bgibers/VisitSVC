@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
+using FirebaseAdmin.Messaging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -29,10 +30,11 @@ namespace Visit.Service.BusinessLogic
         private readonly VisitContext _visitContext;
         private readonly UserManager<User> _userManager;
         private readonly IBlobStorageBusinessLogic _blobStorage;
-
+        private readonly IFirebaseService _firebaseService;
+        
         public AccountsService(ILogger<AccountsService> logger, IMapper mapper, IJwtFactory jwtFactory, 
             IOptions<JwtIssuerOptions> jwtOptions, VisitContext visitContext, 
-            UserManager<User> userManager, IBlobStorageBusinessLogic blobStorage)
+            UserManager<User> userManager, IBlobStorageBusinessLogic blobStorage, IFirebaseService firebaseService)
         {
             _logger = logger;
             _mapper = mapper;
@@ -41,6 +43,7 @@ namespace Visit.Service.BusinessLogic
             _visitContext = visitContext;
             _userManager = userManager;
             _blobStorage = blobStorage;
+            _firebaseService = firebaseService;
         }
         
         public async Task<CreateUserResponse> RegisterUser(RegisterRequest model)
@@ -112,6 +115,17 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<bool> EmailAlreadyTaken(string email)
         {
+            var message = new Message()
+            {
+                Token = "e8AMdTGkKksiqvpwVDNivC:APA91bGQYcDwblCzacTwNTzjXy8v8WCb6GuH1VW3WGGwIsVfxbEp-BuFhKTLBgpXx434E7NglH_RFUCok_BNt0TfTEGtZ5xIPEvx3BjURWMEE05zICJO8NKbes2E1c0b11tGEMh7SM75",
+                Notification = new Notification()
+                {
+                    Body = "Test",
+                    Title = "test"
+                }
+            };
+
+            await _firebaseService.SendPushNotification(message);
             var result = await _userManager.FindByEmailAsync(email);
 
             return result != null;
@@ -160,6 +174,15 @@ namespace Visit.Service.BusinessLogic
             user.ResidenceLocation = request.ResidenceLocation;
             user.Title = request.Title;
 
+            await _userManager.UpdateAsync(user);
+
+            return true;
+        }
+        
+        public async Task<bool> UpdateUserFCM(Claim claim, string deviceId)
+        {
+            var user = await _userManager.FindByNameAsync(claim.Value);
+            
             await _userManager.UpdateAsync(user);
 
             return true;
