@@ -157,11 +157,11 @@ namespace Visit.Service.BusinessLogic
                     res = await _blobStorage.UploadBlob($"{user.Id}/posts/{location.LocationName}", postRequest.Image, fileName);
                     if (string.IsNullOrEmpty(res.ToString()))
                     {
-                        _logger.LogError("User " + user.UserName + " post image not updated");
+                        _logger.LogError("User " + user.Email + " post image not updated");
                         return new NewPostResponse(false, new ImageErrors()
                         {
                             IdentityErrors = null,
-                            UploadError = "User " + user.UserName + " post image could not be uploaded"
+                            UploadError = "User " + user.Email + " post image could not be uploaded"
                         });
                     }
                 }

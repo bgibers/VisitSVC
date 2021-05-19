@@ -1,13 +1,7 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
-using Visit.DataAccess.EntityFramework;
-using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models;
 using Visit.Service.Models.Requests;

@@ -1,10 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.Interfaces;
@@ -26,11 +28,28 @@ namespace Visit.Service.ApiControllers
             _userBusinessLogic = userBusinessLogic;
         }
 
+        [Authorize]
+        [HttpGet("self")]
+        public async Task<ActionResult<SlimUserResponse>> GetAuthUser()
+        {
+
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _userBusinessLogic.GetLoggedInUser(headerValue.Parameter);
+            }
+            
+            return Unauthorized();
+
+        }
+        
+        
         /// <summary>
         /// Get all users registered
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<User>>> GetAllUsers()
         {
             return await _context.User.ToListAsync();
@@ -41,8 +60,8 @@ namespace Visit.Service.ApiControllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpGet("get/{id}")]
-        [Authorize(Policy = "VisitUser")]
+        [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<UserResponse>> GetUser(string id)
         {
             return await _userBusinessLogic.GetUserById(id);
@@ -54,7 +73,7 @@ namespace Visit.Service.ApiControllers
         /// <param name="query"></param>
         /// <returns></returns>
         [HttpGet("search/{query}")]
-        [Authorize(Policy = "VisitUser")]
+        [Authorize]
         public List<SlimUserResponse> Search(string query)
         {
             return _userBusinessLogic.FindUserBySearchCriteria(query);
