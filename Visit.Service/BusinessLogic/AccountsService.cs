@@ -68,8 +68,8 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<UploadImageResponse> UpdateProfileImage(string claim, IFormFile image)
         {
-            var currentUserId = (await _firebaseService.GetUserFromToken(claim)).Uid;
-            var currentUser = await _visitContext.User.SingleAsync(f => f.Id == currentUserId);
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var currentUser = await _visitContext.User.FindAsync(userId);
             
             var fileName = Guid.NewGuid();
             var res = await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image, fileName);
@@ -94,8 +94,8 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<bool> UpdateAccountInfo(string claim, UpdateUserInfoRequest request)
         {
-            var currentUserId = (await _firebaseService.GetUserFromToken(claim)).Uid;
-            var user = await _visitContext.User.SingleAsync(f => f.Id == currentUserId);
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
             
             user.Education = request.Education;
             user.Firstname = request.Firstname;
@@ -112,8 +112,8 @@ namespace Visit.Service.BusinessLogic
         /// <inheritdoc/>
         public async Task<bool> UpdateUserFcm(string claim, string deviceId)
         {
-            var currentUserId = (await _firebaseService.GetUserFromToken(claim)).Uid;
-            var user = await _visitContext.User.SingleAsync(f => f.Id == currentUserId);
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
             
             _visitContext.User.Update(user);
             await _visitContext.SaveChangesAsync();
@@ -123,8 +123,8 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<int> ChangeLocationStatus(string claim, MarkLocationsRequest request)
         {
-            var currentUserId = (await _firebaseService.GetUserFromToken(claim)).Uid;
-            var user = await _visitContext.User.SingleAsync(f => f.Id == currentUserId);
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
             
             // request.locations contains <locationName,Status>
             foreach (var (key, value) in request.Locations)

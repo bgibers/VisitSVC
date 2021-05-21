@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models;
 using Visit.Service.Models.Requests;
@@ -29,14 +31,14 @@ namespace Visit.Service.ApiControllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPage(int page)
         { 
-            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            var authorization = Request.Headers[HeaderNames.Authorization];
 
-            if (user == null)
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
-                return Unauthorized();
+                return await _postService.GetPostsByPage(headerValue.Parameter, page, "", "");
             }
-            
-            return await _postService.GetPostsByPage(user, page, "", "");
+
+            return Unauthorized();
         }
 
         /// <summary>
@@ -50,14 +52,14 @@ namespace Visit.Service.ApiControllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPageWithFilterByUserId(int page, string filter = "", string userId = "")
         { 
-            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            var authorization = Request.Headers[HeaderNames.Authorization];
 
-            if (user == null)
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
-                return Unauthorized();
+                return await _postService.GetPostsByPage(headerValue.Parameter, page, filter, userId);
             }
-            
-            return await _postService.GetPostsByPage(user, page, filter, userId);
+
+            return Unauthorized();
         }
         
         /// <summary>
@@ -70,14 +72,14 @@ namespace Visit.Service.ApiControllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPageByUserId(int page, string userId = "")
         { 
-            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            var authorization = Request.Headers[HeaderNames.Authorization];
 
-            if (user == null)
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
-                return Unauthorized();
+                return await _postService.GetPostsByPage(headerValue.Parameter, page, "", userId);
             }
-            
-            return await _postService.GetPostsByPage(user, page, "", userId);
+
+            return Unauthorized();
         }
         
         /// <summary>
@@ -90,14 +92,15 @@ namespace Visit.Service.ApiControllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPageWithFilter(int page, string filter = "")
         { 
-            var user = User.FindFirst(ClaimTypes.NameIdentifier);
+            var authorization = Request.Headers[HeaderNames.Authorization];
 
-            if (user == null)
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
-                return Unauthorized();
+                return await _postService.GetPostsByPage(headerValue.Parameter, page, filter, "");
             }
+
+            return Unauthorized();
             
-            return await _postService.GetPostsByPage(user, page, filter, "");
         }
         
         /// <summary>
@@ -109,14 +112,16 @@ namespace Visit.Service.ApiControllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<NewPostResponse>> AddNewPost([FromForm] CreatePostRequest post)
         { 
-            var user = User.FindFirst(ClaimTypes.NameIdentifier);
-            
-            if (user == null)
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
-                return Unauthorized();
+                return await _postService.CreatePost(headerValue.Parameter, post);
             }
+
+            return Unauthorized();
             
-            return await _postService.CreatePost(user, post);
+            
         }
 
         #region Likes and comments
@@ -130,14 +135,13 @@ namespace Visit.Service.ApiControllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<bool>> LikePost(string postId)
         { 
-            var user = User.FindFirst(ClaimTypes.NameIdentifier);
-            
-            if (user == null)
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
-                return Unauthorized();
+                return await _postService.LikePost(headerValue.Parameter, postId);
             }
-            
-            return await _postService.LikePost(user, postId);
+            return Unauthorized();
         }
         
         /// <summary>
@@ -162,14 +166,13 @@ namespace Visit.Service.ApiControllers
         [ProducesResponseType(200)]
         public async Task<ActionResult<bool>> CommentOnPost(string postId, [FromBody] CommentApi comment)
         { 
-            var user = User.FindFirst(ClaimTypes.NameIdentifier);
-            
-            if (user == null)
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
-                return Unauthorized();
+                return await _postService.CommentOnPost(headerValue.Parameter, postId, comment.Comment);
             }
-            
-            return await _postService.CommentOnPost(user, postId, comment.Comment);
+            return Unauthorized();
         }
         
         /// <summary>

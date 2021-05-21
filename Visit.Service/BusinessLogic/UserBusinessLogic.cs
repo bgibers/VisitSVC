@@ -2,11 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Visit.DataAccess.EntityFramework;
-using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models.Responses;
@@ -19,16 +17,14 @@ namespace Visit.Service.BusinessLogic
         private readonly IMapper _mapper;
         private readonly VisitContext _visitContext;
         private readonly IFirebaseService _firebaseService;
-        private readonly IBlobStorageBusinessLogic _blobStorage;
 
-        public UserBusinessLogic(ILogger<UserBusinessLogic> logger, IMapper mapper, VisitContext visitContext, IFirebaseService firebaseService,
-            IBlobStorageBusinessLogic blobStorage)
+        public UserBusinessLogic(ILogger<UserBusinessLogic> logger, IMapper mapper, 
+            VisitContext visitContext, IFirebaseService firebaseService)
         {
             _logger = logger;
             _mapper = mapper;
             _visitContext = visitContext;
             _firebaseService = firebaseService;
-            _blobStorage = blobStorage;
         }
         
         public async Task<UserResponse> GetUserById(string id)
