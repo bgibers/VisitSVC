@@ -33,7 +33,14 @@ namespace Visit.Service.BusinessLogic
         
         public async Task<UserRecord> GetUserByEmail(string email)
         {
-            return await _firebaseAuth.GetUserByEmailAsync(email);
+            try
+            {
+                return await _firebaseAuth.GetUserByEmailAsync(email);
+            }
+            catch (FirebaseAuthException e)
+            {
+                return null;
+            }
         }
 
         public async Task<FirebaseToken> GetUserFromToken(string uuid)
