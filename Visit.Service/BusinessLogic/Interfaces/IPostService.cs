@@ -19,7 +19,8 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// <param name="filter"></param>
         /// <param name="userId"></param>
         /// <returns></returns>
-        Task<PaginatedList<PostApi>> GetPostsByPage(Claim user, int? pageNumber, string filter = "", string userId = "");
+        Task<PaginatedList<PostApi>> GetPostsByPage(string user, int? pageNumber, string filter = "",
+            string userId = "");
 
         /// <summary>
         /// Create a new post
@@ -27,7 +28,7 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// <param name="user"></param>
         /// <param name="postRequest"></param>
         /// <returns></returns>
-        Task<NewPostResponse> CreatePost(Claim user, CreatePostRequest postRequest);
+        Task<NewPostResponse> CreatePost(string user, CreatePostRequest postRequest);
 
         /// <summary>
         /// Allows a user to like a post
@@ -35,7 +36,7 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// <param name="user"></param>
         /// <param name="postId"></param>
         /// <returns></returns>
-        Task<bool> LikePost(Claim user, string postId);
+        Task<bool> LikePost(string user, string postId);
 
         /// <summary>
         /// Allows a user to comment on a post
@@ -44,7 +45,7 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// <param name="postId"></param>
         /// <param name="comment"></param>
         /// <returns></returns>
-        Task<bool> CommentOnPost(Claim user, string postId, string comment);
+        Task<bool> CommentOnPost(string user, string postId, string comment);
 
         /// <summary>
         /// Get all likes for post by postId

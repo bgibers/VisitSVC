@@ -5,7 +5,7 @@ using Visit.DataAccess.Models;
 
 namespace Visit.DataAccess.EntityFramework
 {
-    public class VisitContext : IdentityDbContext<User>
+    public class VisitContext : DbContext
     {
         private readonly IConfiguration _configuration;
         

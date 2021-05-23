@@ -3,6 +3,7 @@
  using System.Text;
 using AutoMapper;
  using FirebaseAdmin;
+ using FirebaseAdmin.Auth;
  using FirebaseAdmin.Messaging;
  using Google.Apis.Auth.OAuth2;
  using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -92,70 +93,23 @@ using Visit.Service.Config;
              services.Configure<BlobConfig>(Configuration.GetSection("BlobStorageAcct"));
 
              // Authentication
-             services.AddSingleton<IJwtFactory, JwtFactory>();
+             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                 .AddJwtBearer(options =>
+                 {
+                     var projectId = Configuration.GetSection("Firebase:project_id").Value;
+                     
+                     options.Authority = $"https://securetoken.google.com/{projectId}";
+                     options.TokenValidationParameters = new TokenValidationParameters
+                     {
+                         ValidateIssuer = true,
+                         ValidIssuer = $"https://securetoken.google.com/{projectId}",
+                         ValidateAudience = true,
+                         ValidAudience = projectId,
+                         ValidateLifetime = true
+                     };
+                 });
 
-             var jwtAppSettingOptions = Configuration.GetSection(nameof(JwtIssuerOptions));
-             var signingKey = new SymmetricSecurityKey(
-                 Encoding.ASCII.GetBytes(jwtAppSettingOptions[nameof(JwtIssuerOptions.SigningKey)]));
-             // Configure JwtIssuerOptions
-             services.Configure<JwtIssuerOptions>(options =>
-             {
-                 options.Issuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
-                 options.Audience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)];
-                 options.SigningCredentials = new SigningCredentials(signingKey,
-                     SecurityAlgorithms.HmacSha256);
-             });
-
-             var tokenValidationParameters = new TokenValidationParameters
-             {
-                 ValidateIssuer = true,
-                 ValidIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)],
-
-                 ValidateAudience = true,
-                 ValidAudience = jwtAppSettingOptions[nameof(JwtIssuerOptions.Audience)],
-
-                 ValidateIssuerSigningKey = true,
-                 IssuerSigningKey = signingKey,
-
-                 RequireExpirationTime = false,
-                 ValidateLifetime = true,
-                 ClockSkew = TimeSpan.Zero
-             };
-
-             services.AddAuthentication(options =>
-             {
-                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-             }).AddJwtBearer(configureOptions =>
-             {
-                 configureOptions.ClaimsIssuer = jwtAppSettingOptions[nameof(JwtIssuerOptions.Issuer)];
-                 configureOptions.TokenValidationParameters = tokenValidationParameters;
-                 configureOptions.SaveToken = true;
-             });
-
-             // api user claim policy
-             services.AddAuthorization(options =>
-             {
-                 options.AddPolicy("VisitUser", policy =>
-                     policy.RequireClaim(Constants.Strings.JwtClaimIdentifiers.Rol,
-                         Constants.Strings.JwtClaims.ApiAccess));
-             });
-
-             var builder = services.AddIdentityCore<User>(o =>
-             {
-                 o.User.RequireUniqueEmail = true;
-
-                 // configure identity options
-                 o.Password.RequireDigit = true;
-                 o.Password.RequireLowercase = true;
-                 o.Password.RequireUppercase = true;
-                 o.Password.RequireNonAlphanumeric = false;
-                 o.Password.RequiredLength = 6;
-             });
-             builder = new IdentityBuilder(builder.UserType, typeof(IdentityRole), builder.Services);
-             builder.AddEntityFrameworkStores<VisitContext>().AddDefaultTokenProviders();
-
-
+             
              // Services and BL
              services.AddScoped<PostTestDataService>();
              services.AddTransient<IBlobStorageBusinessLogic, BlobStorageBusinessLogic>();
@@ -176,7 +130,7 @@ using Visit.Service.Config;
                  );
              });
 
-             AddFireBaseMessaging(services, Configuration);
+             AddFireBase(services, Configuration);
 
          }
 
@@ -241,29 +195,25 @@ using Visit.Service.Config;
              });
          }
 
-         private static void AddFireBaseMessaging(IServiceCollection services, IConfiguration configuration)
+         private static void AddFireBase(IServiceCollection services, IConfiguration configuration)
          {
-             services.AddSingleton(service =>
+             var path = Path.Combine(Directory.GetCurrentDirectory(), "Secrets", "firebase_admin_sdk.json");
+             FirebaseApp app;
+             try
              {
-                 var path = Path.Combine(Directory.GetCurrentDirectory(), "Secrets", "firebase_admin_sdk.json");
-                 FirebaseApp app;
-                 try
+                 app = FirebaseApp.Create(new AppOptions()
                  {
-                     app = FirebaseApp.Create(new AppOptions()
-                     {
-                         Credential = GoogleCredential.FromFile(path)
-                     }, "FBApp");
-                 }
-                 catch (Exception)
-                 {
-                     app = FirebaseApp.GetInstance("FBApp");
-                 }
+                     Credential = GoogleCredential.FromFile(path)
+                 }, "FBApp");
+             }
+             catch (Exception)
+             {
+                 app = FirebaseApp.GetInstance("FBApp");
+             }
 
-                 var messagingInstance = FirebaseMessaging.GetMessaging(app);
-                 return messagingInstance;
-             });
+             services.AddSingleton(FirebaseMessaging.GetMessaging(app));
+             services.AddSingleton(FirebaseAuth.GetAuth(app));
          }
      }
  }
-
-// options.Authority = $"https://cognito-idp.{Configuration.GetSection("AWS")["Region"]}.amazonaws.com/{Configuration.GetSection("AwsCognito")["UserPoolId"]}";
+ 

@@ -24,24 +24,25 @@ namespace Visit.Service.BusinessLogic
     public class PostService : IPostService
     {
         private readonly VisitContext _visitContext;
-        private readonly UserManager<User> _userManager;
+        private readonly IFirebaseService _firebaseService;
         private readonly IBlobStorageBusinessLogic _blobStorage;
         private readonly ILogger<PostService> _logger;
         private readonly IMapper _mapper;
 
-        public PostService(VisitContext visitContext, UserManager<User> userManager, IBlobStorageBusinessLogic blobStorage, 
+        public PostService(VisitContext visitContext, IFirebaseService firebaseService, IBlobStorageBusinessLogic blobStorage, 
             ILogger<PostService> logger, IMapper mapper)
         {
             _visitContext = visitContext;
-            _userManager = userManager;
+            _firebaseService = firebaseService;
             _blobStorage = blobStorage;
             _logger = logger;
             _mapper = mapper;
         }
 
-        public async Task<PaginatedList<PostApi>> GetPostsByPage(Claim claim, int? pageNumber, string filter = "", string userId = "")
+        public async Task<PaginatedList<PostApi>> GetPostsByPage(string claim, int? pageNumber, string filter = "",
+            string userId = "")
         {
-            var user = await _userManager.FindByNameAsync(claim.Value);
+            var user = await _firebaseService.GetUserFromToken(claim);
 
             int pageSize = 50;
             var postApiList = new List<PostApi>();
@@ -104,7 +105,7 @@ namespace Visit.Service.BusinessLogic
                 var commentCount = post.PostComment.Count;
                 var likeCount = post.Like.Count;
 
-                bool likedByCurrentUser = _visitContext.Like.Any(l => l.FkPostId == post.PostId && l.FkUserId == user.Id);
+                bool likedByCurrentUser = await _visitContext.Like.AnyAsync(l => l.FkPostId == post.PostId && l.FkUserId == user.Uid);
 
                 try
                 {
@@ -141,9 +142,10 @@ namespace Visit.Service.BusinessLogic
             };
         }
         
-        public async Task<NewPostResponse> CreatePost(Claim claim, CreatePostRequest postRequest)
+        public async Task<NewPostResponse> CreatePost(string claim, CreatePostRequest postRequest)
         {
-            var user = await _userManager.FindByNameAsync(claim.Value);
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
             
             try
             {
@@ -157,11 +159,11 @@ namespace Visit.Service.BusinessLogic
                     res = await _blobStorage.UploadBlob($"{user.Id}/posts/{location.LocationName}", postRequest.Image, fileName);
                     if (string.IsNullOrEmpty(res.ToString()))
                     {
-                        _logger.LogError("User " + user.UserName + " post image not updated");
+                        _logger.LogError("User " + user.Email + " post image not updated");
                         return new NewPostResponse(false, new ImageErrors()
                         {
                             IdentityErrors = null,
-                            UploadError = "User " + user.UserName + " post image could not be uploaded"
+                            UploadError = "User " + user.Email + " post image could not be uploaded"
                         });
                     }
                 }
@@ -209,10 +211,10 @@ namespace Visit.Service.BusinessLogic
             }
         }
 
-        public async Task<bool> LikePost(Claim claim, string postId)
-        {
-            // TODO only like a post once
-            var user = await _userManager.FindByNameAsync(claim.Value);
+        public async Task<bool> LikePost(string claim, string postId)
+        { 
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
 
             try
             {
@@ -239,9 +241,10 @@ namespace Visit.Service.BusinessLogic
             }
         }
         
-        public async Task<bool> CommentOnPost(Claim claim, string postId, string comment)
+        public async Task<bool> CommentOnPost(string claim, string postId, string comment)
         {
-            var user = await _userManager.FindByNameAsync(claim.Value);
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
 
             try
             {

@@ -1,16 +1,11 @@
 using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using FirebaseAdmin.Messaging;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Visit.DataAccess.Auth;
-using Visit.DataAccess.Auth.Helpers;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.BlobStorage;
@@ -25,94 +20,32 @@ namespace Visit.Service.BusinessLogic
     {
         private readonly ILogger<AccountsService> _logger;
         private readonly IMapper _mapper;
-        private readonly IJwtFactory _jwtFactory;
-        private readonly JwtIssuerOptions _jwtOptions;
         private readonly VisitContext _visitContext;
-        private readonly UserManager<User> _userManager;
         private readonly IBlobStorageBusinessLogic _blobStorage;
         private readonly IFirebaseService _firebaseService;
         
-        public AccountsService(ILogger<AccountsService> logger, IMapper mapper, IJwtFactory jwtFactory, 
-            IOptions<JwtIssuerOptions> jwtOptions, VisitContext visitContext, 
-            UserManager<User> userManager, IBlobStorageBusinessLogic blobStorage, IFirebaseService firebaseService)
+        public AccountsService(ILogger<AccountsService> logger, IMapper mapper, VisitContext visitContext, 
+            IBlobStorageBusinessLogic blobStorage, IFirebaseService firebaseService)
         {
             _logger = logger;
             _mapper = mapper;
-            _jwtFactory = jwtFactory;
-            _jwtOptions = jwtOptions.Value;
             _visitContext = visitContext;
-            _userManager = userManager;
             _blobStorage = blobStorage;
             _firebaseService = firebaseService;
         }
         
-        public async Task<CreateUserResponse> RegisterUser(RegisterRequest model)
+        public async Task<bool> RegisterUser(RegisterRequest model)
         {
             var userIdentity = _mapper.Map<User>(model);
-            userIdentity.UserName = model.Email;
-            var result = await _userManager.CreateAsync(userIdentity, model.Password);
-            
-            if (!result.Succeeded)
-            {
-                _logger.LogError($"Could not create user: {result.Errors}");
-                return new CreateUserResponse(null, false, result.Errors);
-            }
+            var result = await _firebaseService.CreateUser(model.Email, model.Password);
+            userIdentity.Id = result.Uid;
 
+            await _visitContext.User.AddAsync(userIdentity);
             await _visitContext.SaveChangesAsync();
-            
-            // Try to get a claim and uplaod image. Prob need some logging/retry handling here
-            var claim = await GetClaimsIdentity(model.Email, model.Password);
-            
-            var token = await LoginUser(new LoginApiRequest()
-            {
-                UserName = model.Email,
-                Password = model.Password
-            });
-            
-            return new CreateUserResponse(token,true,null);
+                
+            return true;
         }
         
-        public async Task<JwtToken> LoginUser(LoginApiRequest credentials)
-        {
-            var identity = await GetClaimsIdentity(credentials.UserName, credentials.Password);
-            
-            if (identity == null)
-            {
-                return null;
-            }
-            
-            return JsonConvert.DeserializeObject<JwtToken>(
-                await Tokens.GenerateJwt(identity, _jwtFactory, identity.Name, _jwtOptions, 
-                new JsonSerializerSettings { Formatting = Formatting.Indented }));
-        }
-        
-        private async Task<ClaimsIdentity> GetClaimsIdentity(string userName, string password)
-        {
-            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
-                return await Task.FromResult<ClaimsIdentity>(null);
-            
-            User userToVerify;
-            if (userName.Contains('@'))
-            {
-                userToVerify = await _userManager.FindByEmailAsync(userName);
-            }
-            else
-            {
-                userToVerify = await _userManager.FindByNameAsync(userName);
-            }
-
-            if (userToVerify == null) return await Task.FromResult<ClaimsIdentity>(null);
-
-            // check the credentials
-            if (await _userManager.CheckPasswordAsync(userToVerify, password))
-            {
-                return await Task.FromResult(_jwtFactory.GenerateClaimsIdentity(userToVerify.UserName, userToVerify.Id));
-            }
-
-            // Credentials are invalid, or account doesn't exist
-            return await Task.FromResult<ClaimsIdentity>(null);
-        }
-
         public async Task<bool> EmailAlreadyTaken(string email)
         {
             var message = new Message()
@@ -126,47 +59,44 @@ namespace Visit.Service.BusinessLogic
             };
 
             await _firebaseService.SendPushNotification(message);
-            var result = await _userManager.FindByEmailAsync(email);
+
+            
+            var result = await _firebaseService.GetUserByEmail(email);
 
             return result != null;
         }
-        
-        public async Task<UploadImageResponse> UpdateProfileImage(Claim claim, IFormFile image)
+
+        public async Task<UploadImageResponse> UpdateProfileImage(string claim, IFormFile image)
         {
-            var currentUser = await _userManager.FindByNameAsync(claim.Value);
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var currentUser = await _visitContext.User.FindAsync(userId);
+            
             var fileName = Guid.NewGuid();
             var res = await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image, fileName);
             if (string.IsNullOrEmpty(res.ToString()))
             {
-                _logger.LogError("User " + currentUser.UserName + " Avi not updated");
+                _logger.LogError("User " + currentUser.Email + " Avi not updated");
                 return new UploadImageResponse(false, new ImageErrors()
                 {
                     IdentityErrors = null,
-                    UploadError = "User " + currentUser.UserName + " avi could not be uploaded"
+                    UploadError = "User " + currentUser.Email + " avi could not be uploaded"
                 });
             }
 
             currentUser.Avi = res.ToString();
             
-            var result = await _userManager.UpdateAsync(currentUser);
-            if (!result.Succeeded)
-            {
-                _logger.LogError($"Could not create user: {result.Errors}");
-                return new UploadImageResponse(false, new ImageErrors()
-                {
-                    IdentityErrors = result.Errors,
-                    UploadError = ""
-                });
-            }
+            _visitContext.User.Update(currentUser);
+            await _visitContext.SaveChangesAsync();
             
             return new UploadImageResponse(true,null);
 
         }
 
-        public async Task<bool> UpdateAccountInfo(Claim claim, UpdateUserInfoRequest request)
+        public async Task<bool> UpdateAccountInfo(string claim, UpdateUserInfoRequest request)
         {
-            var user = await _userManager.FindByNameAsync(claim.Value);
-
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
+            
             user.Education = request.Education;
             user.Firstname = request.Firstname;
             user.Lastname = request.Lastname;
@@ -174,43 +104,47 @@ namespace Visit.Service.BusinessLogic
             user.ResidenceLocation = request.ResidenceLocation;
             user.Title = request.Title;
 
-            await _userManager.UpdateAsync(user);
-
+            _visitContext.User.Update(user);
+            await _visitContext.SaveChangesAsync();
             return true;
         }
-        
-        public async Task<bool> UpdateUserFCM(Claim claim, string deviceId)
+
+        /// <inheritdoc/>
+        public async Task<bool> UpdateUserFcm(string claim, string deviceId)
         {
-            var user = await _userManager.FindByNameAsync(claim.Value);
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
             
-            await _userManager.UpdateAsync(user);
-
+            _visitContext.User.Update(user);
+            await _visitContext.SaveChangesAsync();
+            
             return true;
         }
 
-        public async Task<int> ChangeLocationStatus(Claim claim, MarkLocationsRequest request)
+        public async Task<int> ChangeLocationStatus(string claim, MarkLocationsRequest request)
         {
-            var user = await _userManager.FindByNameAsync(claim.Value);
-
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
+            
             // request.locations contains <locationName,Status>
-            foreach (var i in request.Locations)
+            foreach (var (key, value) in request.Locations)
             {
-                var location = _visitContext.Location.Single(f => f.LocationCode == i.Key);
+                var location = _visitContext.Location.Single(f => f.LocationCode == key);
                 
                 var userLocation = new UserLocation
                 {
-                    Status = i.Value,
+                    Status = value,
                     Venue = "",
                     FkLocation = location,
                     FkUser = user
                 };
                 
                 var existingEntry = _visitContext.UserLocation.SingleOrDefault(e =>
-                    e.FkUser == user && e.FkLocation == location && e.Status == i.Value);
+                    e.FkUser == user && e.FkLocation == location && e.Status == value);
 
                 if (existingEntry != null)
                 {
-                    existingEntry.Status = i.Value;
+                    existingEntry.Status = value;
                     _visitContext.UserLocation.Update(existingEntry);
                     userLocation = existingEntry;
                 }
@@ -221,7 +155,7 @@ namespace Visit.Service.BusinessLogic
 
                 var caption = "";
                 PostType postType;
-                if (i.Value == "toVisit")
+                if (value == "toVisit")
                 {
                     caption = $"Wants to venture {location.LocationName}. Any thoughts?";
                     postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "toVisit");
@@ -252,7 +186,7 @@ namespace Visit.Service.BusinessLogic
             
             return  await _visitContext.SaveChangesAsync();
         }
-        
+
         public async Task<CodeConfirmResult> ConfirmRegister(CodeConfirmRequest model)
         {
             throw new NotImplementedException();
@@ -272,5 +206,6 @@ namespace Visit.Service.BusinessLogic
         {
             throw new NotImplementedException();
         }
+        
     }
 }

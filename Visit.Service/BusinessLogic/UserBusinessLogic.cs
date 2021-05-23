@@ -2,12 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Azure.Storage.Blobs;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Visit.DataAccess.EntityFramework;
-using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models.Responses;
@@ -19,16 +16,15 @@ namespace Visit.Service.BusinessLogic
         private readonly ILogger<UserBusinessLogic> _logger;
         private readonly IMapper _mapper;
         private readonly VisitContext _visitContext;
-        private readonly UserManager<User> _userManager;
-        private readonly IBlobStorageBusinessLogic _blobStorage;
+        private readonly IFirebaseService _firebaseService;
 
-        public UserBusinessLogic(ILogger<UserBusinessLogic> logger, IMapper mapper, VisitContext visitContext, UserManager<User> userManager, IBlobStorageBusinessLogic blobStorage)
+        public UserBusinessLogic(ILogger<UserBusinessLogic> logger, IMapper mapper, 
+            VisitContext visitContext, IFirebaseService firebaseService)
         {
             _logger = logger;
             _mapper = mapper;
             _visitContext = visitContext;
-            _userManager = userManager;
-            _blobStorage = blobStorage;
+            _firebaseService = firebaseService;
         }
         
         public async Task<UserResponse> GetUserById(string id)
@@ -53,15 +49,27 @@ namespace Visit.Service.BusinessLogic
             return userScrubbed;
         }
 
-        public Task<UserResponse> GetUserByEmail(string email)
+        public async Task<SlimUserResponse> GetLoggedInUser(string claim)
         {
-            throw new System.NotImplementedException();
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.SingleAsync(u => u.Id == userId);
+            
+            return _mapper.Map<SlimUserResponse>(user);
+        }
+
+
+        public async Task<SlimUserResponse> GetUserByEmail(string email)
+        {
+            var userId = (await _firebaseService.GetUserByEmail(email)).Uid;
+            var user = await _visitContext.User.SingleAsync(u => u.Id == userId);
+            
+            return _mapper.Map<SlimUserResponse>(user);
         }
 
         public List<SlimUserResponse> FindUserBySearchCriteria(string query)
         {
             var queries = query.Split(' ');
-            var users = _userManager.Users
+            var users = _visitContext.User
                 .Where(u => u.Firstname.ToLower().Contains(queries[0].ToLower()) 
                             || u.Lastname.ToLower().Contains(queries[0].ToLower())).Take(20);
 
@@ -75,7 +83,7 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<SlimUserResponse> GetSlimUser(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
+            var user = await _visitContext.User.SingleAsync(u => u.Id == id);
             
             return _mapper.Map<SlimUserResponse>(user);
         }

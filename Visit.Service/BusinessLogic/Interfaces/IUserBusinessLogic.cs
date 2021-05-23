@@ -8,8 +8,10 @@ namespace Visit.Service.BusinessLogic.Interfaces
     public interface IUserBusinessLogic
     {
         Task<UserResponse> GetUserById(string id);
+
+        Task<SlimUserResponse> GetLoggedInUser(string claim);
         
-        Task<UserResponse> GetUserByEmail(string email);
+        Task<SlimUserResponse> GetUserByEmail(string email);
 
         /// <summary>
         /// For the instances when we only want the users name and image
