@@ -48,19 +48,19 @@ namespace Visit.Service.BusinessLogic
         
         public async Task<bool> EmailAlreadyTaken(string email)
         {
-            var message = new Message()
-            {
-                Token = "e8AMdTGkKksiqvpwVDNivC:APA91bGQYcDwblCzacTwNTzjXy8v8WCb6GuH1VW3WGGwIsVfxbEp-BuFhKTLBgpXx434E7NglH_RFUCok_BNt0TfTEGtZ5xIPEvx3BjURWMEE05zICJO8NKbes2E1c0b11tGEMh7SM75",
-                Notification = new Notification()
-                {
-                    Body = "Test",
-                    Title = "test"
-                }
-            };
-
-            await _firebaseService.SendPushNotification(message);
-
-            
+//            var message = new Message()
+//            {
+//                Token = "e8AMdTGkKksiqvpwVDNivC:APA91bGQYcDwblCzacTwNTzjXy8v8WCb6GuH1VW3WGGwIsVfxbEp-BuFhKTLBgpXx434E7NglH_RFUCok_BNt0TfTEGtZ5xIPEvx3BjURWMEE05zICJO8NKbes2E1c0b11tGEMh7SM75",
+//                Notification = new Notification()
+//                {
+//                    Body = "Test",
+//                    Title = "test"
+//                }
+//            };
+//
+//            await _firebaseService.SendPushNotification(message);
+//
+//            
             var result = await _firebaseService.GetUserByEmail(email);
 
             return result != null;
