@@ -15,7 +15,6 @@ using Visit.Service.Models.Responses;
 namespace Visit.Service.ApiControllers
 {
     [Route("User")]
-    [EnableCors("CorsPolicy")]
     [ApiController]
     public class UserController : ControllerBase
     {

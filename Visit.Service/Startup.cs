@@ -1,29 +1,24 @@
 ﻿﻿using System;
- using System.IO;
- using System.Text;
+using System.IO;
 using AutoMapper;
- using FirebaseAdmin;
- using FirebaseAdmin.Auth;
- using FirebaseAdmin.Messaging;
- using Google.Apis.Auth.OAuth2;
- using Microsoft.AspNetCore.Authentication.JwtBearer;
+using FirebaseAdmin;
+using FirebaseAdmin.Auth;
+using FirebaseAdmin.Messaging;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
- using Microsoft.OpenApi.Models;
- using Newtonsoft.Json;
+using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Visit.DataAccess.Auth;
-using Visit.DataAccess.Auth.Helpers;
 using Visit.DataAccess.EntityFramework;
-using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic;
 using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
@@ -42,6 +37,7 @@ using Visit.Service.Config;
 
          public void ConfigureServices(IServiceCollection services)
          {
+             
              // Config, DB, and swagger
              services.AddSingleton(Configuration);
              services.AddControllers()
@@ -118,18 +114,7 @@ using Visit.Service.Config;
              services.AddTransient<IPostService, PostService>();
              services.AddTransient<IDevopsService, DevopsService>();
              services.AddTransient<IFirebaseService, FirebaseService>();
-
-             // Cors policy
-             services.AddCors(options =>
-             {
-                 options.AddPolicy("CorsPolicy",
-                     builder => builder.AllowAnyOrigin()
-                         .AllowAnyMethod()
-                         .AllowAnyHeader()
-                         .SetIsOriginAllowed(host => true)
-                 );
-             });
-
+             
              AddFireBase(services, Configuration);
 
          }
@@ -150,7 +135,7 @@ using Visit.Service.Config;
              app.UseSwagger();
              app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Visit API V1"); });
              app.UseRouting();
-             app.UseCors("CorsPolicy");
+             app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
              app.UseHttpsRedirection();
              app.UseAuthentication();
              app.UseAuthorization();

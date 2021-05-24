@@ -47,5 +47,21 @@ namespace Visit.Service.BusinessLogic
         {
             return await _firebaseAuth.VerifyIdTokenAsync(uuid);
         }
+        
+        public async Task<bool> CheckIfUserIsVerified(string uuid)
+        {
+            var user = await _firebaseAuth.GetUserAsync(uuid);
+            return user.EmailVerified;
+        }
+        
+        public async Task<string> VerifyUser(string email)
+        {
+            return await _firebaseAuth.GenerateEmailVerificationLinkAsync(email);
+        }
+        
+        public async Task<string> ResetPassword(string email)
+        {
+            return await _firebaseAuth.GeneratePasswordResetLinkAsync(email);
+        }
     }
 }
