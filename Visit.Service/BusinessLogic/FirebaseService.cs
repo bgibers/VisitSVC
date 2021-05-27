@@ -22,6 +22,21 @@ namespace Visit.Service.BusinessLogic
             return _firebaseMessaging.SendAsync(message);
         }
 
+        public async Task<string> CustomJwt(string uuid)
+        {
+            return await _firebaseAuth.CreateCustomTokenAsync(uuid);
+        }
+
+        public async Task<string> VerifyUser(string email)
+        {
+            return await _firebaseAuth.GenerateEmailVerificationLinkAsync(email);
+        }
+        
+        public async Task<string> ResetPassword(string email)
+        {
+            return await _firebaseAuth.GeneratePasswordResetLinkAsync(email);
+        }
+
         public async Task<UserRecord> CreateUser(string email, string password)
         {
             return await _firebaseAuth.CreateUserAsync(new UserRecordArgs()
@@ -30,7 +45,8 @@ namespace Visit.Service.BusinessLogic
                 Password = password
             });
         }
-        
+
+
         public async Task<UserRecord> GetUserByEmail(string email)
         {
             try
@@ -47,21 +63,11 @@ namespace Visit.Service.BusinessLogic
         {
             return await _firebaseAuth.VerifyIdTokenAsync(uuid);
         }
-        
+
         public async Task<bool> CheckIfUserIsVerified(string uuid)
         {
             var user = await _firebaseAuth.GetUserAsync(uuid);
             return user.EmailVerified;
-        }
-        
-        public async Task<string> VerifyUser(string email)
-        {
-            return await _firebaseAuth.GenerateEmailVerificationLinkAsync(email);
-        }
-        
-        public async Task<string> ResetPassword(string email)
-        {
-            return await _firebaseAuth.GeneratePasswordResetLinkAsync(email);
         }
     }
 }

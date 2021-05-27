@@ -8,7 +8,7 @@ namespace Visit.Service.BusinessLogic.Interfaces
 {
     public interface IAccountsService
     {
-        Task<bool> RegisterUser(RegisterRequest model);
+        Task<string> RegisterUser(RegisterRequest model);
         Task<UploadImageResponse> UpdateProfileImage(string claim, IFormFile image);
         Task<bool> UpdateAccountInfo(string claim, UpdateUserInfoRequest request);
         Task<int> ChangeLocationStatus(string claim, MarkLocationsRequest request);

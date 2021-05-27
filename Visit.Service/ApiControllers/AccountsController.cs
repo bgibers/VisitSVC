@@ -29,7 +29,7 @@ namespace Visit.Service.ApiControllers
         [HttpPost("register")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<bool>> Register([FromBody] RegisterRequest request)
+        public async Task<ActionResult<string>> Register([FromBody] RegisterRequest request)
         {
             return await _accountsService.RegisterUser(request);
         }

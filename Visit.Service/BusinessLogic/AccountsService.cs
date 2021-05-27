@@ -2,9 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using FirebaseAdmin.Messaging;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
@@ -34,7 +32,7 @@ namespace Visit.Service.BusinessLogic
             _firebaseService = firebaseService;
         }
         
-        public async Task<bool> RegisterUser(RegisterRequest model)
+        public async Task<string> RegisterUser(RegisterRequest model)
         {
             var userIdentity = _mapper.Map<User>(model);
             var result = await _firebaseService.CreateUser(model.Email, model.Password);
@@ -43,7 +41,7 @@ namespace Visit.Service.BusinessLogic
             await _visitContext.User.AddAsync(userIdentity);
             await _visitContext.SaveChangesAsync();
                 
-            return true;
+            return await _firebaseService.CustomJwt(result.Uid);
         }
         
         public async Task<bool> EmailAlreadyTaken(string email)
