@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using FirebaseAdmin.Auth;
-using Microsoft.AspNetCore.Identity;
 
 namespace Visit.DataAccess.Models
 {

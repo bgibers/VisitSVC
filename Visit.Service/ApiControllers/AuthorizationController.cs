@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Cors;
 
 namespace Visit.Service.ApiControllers
 {

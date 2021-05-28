@@ -39,7 +39,7 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<UserRecord> CreateUser(string email, string password)
         {
-            return await _firebaseAuth.CreateUserAsync(new UserRecordArgs()
+            return await _firebaseAuth.CreateUserAsync(new UserRecordArgs
             {
                 Email = email,
                 Password = password

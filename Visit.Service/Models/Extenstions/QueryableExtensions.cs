@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -15,7 +14,7 @@ namespace Visit.Service.Models.Extenstions
             var orderBy = Expression.Call(
                 typeof(Queryable),
                 direction == "ASC" ? "OrderBy" : "OrderByDescending",
-                new Type[] { typeof(T), memberAccess.Type },
+                new[] { typeof(T), memberAccess.Type },
                 query.Expression,
                 Expression.Quote(keySelector));
 

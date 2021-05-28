@@ -5,7 +5,6 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Visit.DataAccess.EntityFramework;
-using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models.Responses;
 

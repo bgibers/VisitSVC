@@ -16,10 +16,10 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<bool> AddPostTypes()
         {
-            await _visitContext.PostType.AddAsync(new PostType() {Type = "toVisit"});
-            await _visitContext.PostType.AddAsync(new PostType() {Type = "visited"});
-            await _visitContext.PostType.AddAsync(new PostType() {Type = "text"});
-            await _visitContext.PostType.AddAsync(new PostType() {Type = "image"});
+            await _visitContext.PostType.AddAsync(new PostType {Type = "toVisit"});
+            await _visitContext.PostType.AddAsync(new PostType {Type = "visited"});
+            await _visitContext.PostType.AddAsync(new PostType {Type = "text"});
+            await _visitContext.PostType.AddAsync(new PostType {Type = "image"});
 
             await _visitContext.SaveChangesAsync();
 
@@ -28,7 +28,7 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<bool> AddNewPostType(string type)
         {
-            await _visitContext.PostType.AddAsync(new PostType() {Type = type});
+            await _visitContext.PostType.AddAsync(new PostType {Type = type});
             await _visitContext.SaveChangesAsync();
 
             return true;

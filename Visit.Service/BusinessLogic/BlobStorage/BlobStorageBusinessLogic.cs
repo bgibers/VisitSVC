@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -74,7 +73,8 @@ namespace Visit.Service.BusinessLogic.BlobStorage
             try
             {
                 var blob = GetBlob($"{blobPath}/{fileName}.jpg");
-                BlobHttpHeaders httpHeaders = new BlobHttpHeaders() { 
+                BlobHttpHeaders httpHeaders = new BlobHttpHeaders
+                { 
                     ContentType = "image/jpeg"
                 };
                 using (var stream = file.OpenReadStream())

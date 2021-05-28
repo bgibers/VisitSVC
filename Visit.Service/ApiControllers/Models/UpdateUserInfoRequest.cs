@@ -1,5 +1,3 @@
-using System;
-
 namespace Visit.Service.Models.Requests
 {
     public class UpdateUserInfoRequest

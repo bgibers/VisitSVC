@@ -1,28 +1,28 @@
 ﻿﻿using System;
-using System.IO;
-using AutoMapper;
-using FirebaseAdmin;
-using FirebaseAdmin.Auth;
-using FirebaseAdmin.Messaging;
-using Google.Apis.Auth.OAuth2;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using Visit.DataAccess.EntityFramework;
-using Visit.Service.BusinessLogic;
-using Visit.Service.BusinessLogic.BlobStorage;
-using Visit.Service.BusinessLogic.Interfaces;
-using Visit.Service.Config;
+ using System.IO;
+ using AutoMapper;
+ using FirebaseAdmin;
+ using FirebaseAdmin.Auth;
+ using FirebaseAdmin.Messaging;
+ using Google.Apis.Auth.OAuth2;
+ using Microsoft.AspNetCore.Authentication.JwtBearer;
+ using Microsoft.AspNetCore.Builder;
+ using Microsoft.AspNetCore.Diagnostics;
+ using Microsoft.AspNetCore.Hosting;
+ using Microsoft.AspNetCore.Http;
+ using Microsoft.EntityFrameworkCore;
+ using Microsoft.Extensions.Configuration;
+ using Microsoft.Extensions.DependencyInjection;
+ using Microsoft.Extensions.Hosting;
+ using Microsoft.IdentityModel.Tokens;
+ using Microsoft.OpenApi.Models;
+ using Newtonsoft.Json;
+ using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+ using Visit.DataAccess.EntityFramework;
+ using Visit.Service.BusinessLogic;
+ using Visit.Service.BusinessLogic.BlobStorage;
+ using Visit.Service.BusinessLogic.Interfaces;
+ using Visit.Service.Config;
 
  namespace Visit.Service
  {
@@ -42,7 +42,7 @@ using Visit.Service.Config;
              services.AddSingleton(Configuration);
              services.AddControllers()
                  .AddNewtonsoftJson(options =>
-                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                  );
              services.AddSwaggerGen(c =>
              {
@@ -54,7 +54,7 @@ using Visit.Service.Config;
                      Scheme = "Bearer",
                      BearerFormat = "JWT",
                      In = ParameterLocation.Header,
-                     Description = "",
+                     Description = ""
                  });
 
                  c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -186,7 +186,7 @@ using Visit.Service.Config;
              FirebaseApp app;
              try
              {
-                 app = FirebaseApp.Create(new AppOptions()
+                 app = FirebaseApp.Create(new AppOptions
                  {
                      Credential = GoogleCredential.FromFile(path)
                  }, "FBApp");

@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+using FirebaseAdmin.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
@@ -109,7 +107,7 @@ namespace Visit.Service.BusinessLogic
 
                 try
                 {
-                    postApiList.Add(new PostApi()
+                    postApiList.Add(new PostApi
                     {
                         PostId = post.PostId,
                         FkPostTypeId = post.FkPostTypeId,
@@ -132,7 +130,7 @@ namespace Visit.Service.BusinessLogic
                 }
             }
             
-            return new PaginatedList<PostApi>()
+            return new PaginatedList<PostApi>
             {
                 HasNextPage = postPaginatedList.HasNextPage,
                 HasPreviousPage = postPaginatedList.HasPreviousPage,
@@ -160,7 +158,7 @@ namespace Visit.Service.BusinessLogic
                     if (string.IsNullOrEmpty(res.ToString()))
                     {
                         _logger.LogError("User " + user.Email + " post image not updated");
-                        return new NewPostResponse(false, new ImageErrors()
+                        return new NewPostResponse(false, new ImageErrors
                         {
                             IdentityErrors = null,
                             UploadError = "User " + user.Email + " post image could not be uploaded"
@@ -202,68 +200,94 @@ namespace Visit.Service.BusinessLogic
 
                 await _visitContext.SaveChangesAsync();
 
-                return new NewPostResponse(true, null);
+                return new NewPostResponse(true);
             }
             catch (Exception e)
             {
                 _logger.LogError($"Could not create new post for user {user.Id}: {e}");
-                return new NewPostResponse(false, null);
+                return new NewPostResponse();
             }
         }
 
         public async Task<bool> LikePost(string claim, string postId)
         { 
-            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
-            var user = await _visitContext.User.FindAsync(userId);
+            var userLikingId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var userLiking = await _visitContext.User.FindAsync(userLikingId);
 
             try
             {
-                var post = await _visitContext.Post.FindAsync(int.Parse(postId));
+                var post = await _visitContext.Post.Include(p => p.FkUser)
+                    .FirstOrDefaultAsync(p => p.PostId == int.Parse(postId));
                 
-                if (_visitContext.Like.Any(l => l.FkPostId == int.Parse(postId) && l.FkUserId == user.Id))
+                if (_visitContext.Like.Any(l => l.FkPostId == int.Parse(postId) && l.FkUserId == userLiking.Id))
                 {
                     return false;
                 }
                 
-                await _visitContext.Like.AddAsync(new Like()
+                await _visitContext.Like.AddAsync(new Like
                 {
                     FkPost = post,
-                    FkUser = user
+                    FkUser = userLiking
                 });
                 
-                await _visitContext.SaveChangesAsync();
+                await _visitContext.SaveChangesAsync(); 
+                
+                var message = new Message()
+                {
+                    Token = post.FkUser.FcmToken,
+                    Notification = new Notification()
+                    {
+                        Body = $"{userLiking.Firstname} {userLiking.Lastname} liked your post."
+                    }
+                };
+
+                await _firebaseService.SendPushNotification(message);
+                
                 return true;
             }
             catch (Exception e)
             {
-                _logger.LogError($"{user.Id} could not like postId {postId}: {e}");
+                _logger.LogError($"{userLiking.Id} could not like postId {postId}: {e}");
                 return false;
             }
         }
         
         public async Task<bool> CommentOnPost(string claim, string postId, string comment)
         {
-            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
-            var user = await _visitContext.User.FindAsync(userId);
+            var userLikingId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var userLiking = await _visitContext.User.FindAsync(userLikingId);
 
             try
             {
-                var post = await _visitContext.Post.FindAsync(int.Parse(postId));
+                var post = await _visitContext.Post.Include(p => p.FkUser)
+                    .FirstOrDefaultAsync(p => p.PostId == int.Parse(postId));
 
-                await _visitContext.PostComment.AddAsync(new PostComment()
+                await _visitContext.PostComment.AddAsync(new PostComment
                 {
                     FkPost = post,
-                    FkUserIdOfCommentingNavigation = user,
+                    FkUserIdOfCommentingNavigation = userLiking,
                     DatetimeOfComments = DateTime.UtcNow,
                     CommentText = comment
                 });
                 
                 await _visitContext.SaveChangesAsync();
+                
+                var message = new Message()
+                {
+                    Token = post.FkUser.FcmToken,
+                    Notification = new Notification()
+                    {
+                        Body = $"{userLiking.Firstname} {userLiking.Lastname} commented {comment}"
+                    }
+                };
+
+                await _firebaseService.SendPushNotification(message);
+
                 return true;
             }
             catch (Exception e)
             {
-                _logger.LogError($"{user.Id} could not comment on postId {postId}: {e}");
+                _logger.LogError($"{userLiking.Id} could not comment on postId {postId}: {e}");
                 return false;
             }
         }
@@ -281,7 +305,7 @@ namespace Visit.Service.BusinessLogic
                 
                 foreach (var like in likes)
                 {
-                    likesForPosts.Add(new LikeForPost()
+                    likesForPosts.Add(new LikeForPost
                     {
                         FkPostId = like.FkPostId,
                         LikeId = like.LikeId,
@@ -311,7 +335,7 @@ namespace Visit.Service.BusinessLogic
                 
                 foreach (var comment in comments)
                 {
-                    commentsForPost.Add(new CommentForPost()
+                    commentsForPost.Add(new CommentForPost
                     {
                         FkPostId = comment.FkPostId,
                         CommentId = comment.PostCommentId,

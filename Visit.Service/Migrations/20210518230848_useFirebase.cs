@@ -12,7 +12,7 @@ namespace Visit.Service.Migrations
                 name: "Location",
                 columns: table => new
                 {
-                    LocationId = table.Column<int>(type: "int(11)", nullable: false)
+                    LocationId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     LocationCode = table.Column<string>(type: "varchar(8)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
@@ -36,7 +36,7 @@ namespace Visit.Service.Migrations
                 name: "PostType",
                 columns: table => new
                 {
-                    PostTypeId = table.Column<int>(type: "int(11)", nullable: false)
+                    PostTypeId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Type = table.Column<string>(type: "varchar(350)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
@@ -51,7 +51,7 @@ namespace Visit.Service.Migrations
                 name: "Tag",
                 columns: table => new
                 {
-                    TagId = table.Column<int>(type: "int(11)", nullable: false)
+                    TagId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Tag = table.Column<string>(type: "varchar(150)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
@@ -66,7 +66,7 @@ namespace Visit.Service.Migrations
                 name: "User",
                 columns: table => new
                 {
-                    Id = table.Column<string>(nullable: false),
+                    Id = table.Column<string>(),
                     FcmToken = table.Column<string>(nullable: true),
                     Email = table.Column<string>(nullable: true),
                     Firstname = table.Column<string>(type: "varchar(150)", nullable: true)
@@ -115,7 +115,7 @@ namespace Visit.Service.Migrations
                 name: "Post",
                 columns: table => new
                 {
-                    PostId = table.Column<int>(type: "int(11)", nullable: false)
+                    PostId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FK_Post_TypeId = table.Column<int>(type: "int(11)", nullable: true),
                     FK_UserId = table.Column<string>(type: "varchar(255)", nullable: true)
@@ -151,7 +151,7 @@ namespace Visit.Service.Migrations
                 name: "User_Location",
                 columns: table => new
                 {
-                    User_LocationId = table.Column<int>(type: "int(11)", nullable: false)
+                    User_LocationId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FK_LocationId = table.Column<int>(type: "int(11)", nullable: true),
                     FK_UserId = table.Column<string>(type: "varchar(255)", nullable: true)
@@ -188,7 +188,7 @@ namespace Visit.Service.Migrations
                 name: "UserFollowing",
                 columns: table => new
                 {
-                    UserFollowingId = table.Column<int>(type: "int(11)", nullable: false)
+                    UserFollowingId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FK_Main_UserId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
@@ -219,7 +219,7 @@ namespace Visit.Service.Migrations
                 name: "UserMessage",
                 columns: table => new
                 {
-                    UserMessageId = table.Column<int>(type: "int(11)", nullable: false)
+                    UserMessageId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FK_Sender_UserId = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
@@ -253,10 +253,10 @@ namespace Visit.Service.Migrations
                 name: "Like",
                 columns: table => new
                 {
-                    LikeId = table.Column<int>(type: "int(11)", nullable: false)
+                    LikeId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    FK_PostId = table.Column<int>(type: "int(11)", nullable: false),
-                    FK_UserId = table.Column<string>(type: "varchar(255)", nullable: false)
+                    FK_PostId = table.Column<int>(type: "int(11)"),
+                    FK_UserId = table.Column<string>(type: "varchar(255)")
                         .Annotation("MySql:CharSet", "utf8mb4")
                         .Annotation("MySql:Collation", "utf8mb4_0900_ai_ci")
                 },
@@ -281,7 +281,7 @@ namespace Visit.Service.Migrations
                 name: "Post_Tag",
                 columns: table => new
                 {
-                    Post_TagId = table.Column<int>(type: "int(11)", nullable: false)
+                    Post_TagId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FK_PostId = table.Column<int>(type: "int(11)", nullable: true),
                     FK_TagId = table.Column<int>(type: "int(11)", nullable: true)
@@ -307,16 +307,16 @@ namespace Visit.Service.Migrations
                 name: "PostComment",
                 columns: table => new
                 {
-                    PostCommentId = table.Column<int>(type: "int(11)", nullable: false)
+                    PostCommentId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FK_UserId_Of_commenting = table.Column<string>(type: "varchar(255)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                         .Annotation("MySql:Collation", "utf8mb4_0900_ai_ci"),
-                    FK_PostId = table.Column<int>(type: "int(11)", nullable: false),
+                    FK_PostId = table.Column<int>(type: "int(11)"),
                     CommentText = table.Column<string>(type: "varchar(500)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                         .Annotation("MySql:Collation", "utf8mb4_0900_ai_ci"),
-                    DatetimeOfComments = table.Column<DateTime>(nullable: false)
+                    DatetimeOfComments = table.Column<DateTime>()
                 },
                 constraints: table =>
                 {
@@ -339,7 +339,7 @@ namespace Visit.Service.Migrations
                 name: "Location_Tag",
                 columns: table => new
                 {
-                    Location_TagId = table.Column<int>(type: "int(11)", nullable: false)
+                    Location_TagId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FK_User_LocationId = table.Column<int>(type: "int(11)", nullable: true),
                     FK_TagId = table.Column<int>(type: "int(11)", nullable: true)
@@ -365,7 +365,7 @@ namespace Visit.Service.Migrations
                 name: "Post_UserLocation",
                 columns: table => new
                 {
-                    Post_UserLocationId = table.Column<int>(type: "int(11)", nullable: false)
+                    Post_UserLocationId = table.Column<int>(type: "int(11)")
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     FK_PostId = table.Column<int>(type: "int(11)", nullable: true),
                     FK_LocationId = table.Column<int>(type: "int(11)", nullable: true)

@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Identity;
-
 namespace Visit.Service.Models.Responses
 {
     public class NewPostResponse

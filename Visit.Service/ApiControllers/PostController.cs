@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Net.Http.Headers;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
@@ -35,7 +34,7 @@ namespace Visit.Service.ApiControllers
 
             if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
-                return await _postService.GetPostsByPage(headerValue.Parameter, page, "", "");
+                return await _postService.GetPostsByPage(headerValue.Parameter, page);
             }
 
             return Unauthorized();
@@ -96,7 +95,7 @@ namespace Visit.Service.ApiControllers
 
             if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
-                return await _postService.GetPostsByPage(headerValue.Parameter, page, filter, "");
+                return await _postService.GetPostsByPage(headerValue.Parameter, page, filter);
             }
 
             return Unauthorized();

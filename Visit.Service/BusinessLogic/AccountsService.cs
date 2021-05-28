@@ -46,19 +46,6 @@ namespace Visit.Service.BusinessLogic
         
         public async Task<bool> EmailAlreadyTaken(string email)
         {
-//            var message = new Message()
-//            {
-//                Token = "e8AMdTGkKksiqvpwVDNivC:APA91bGQYcDwblCzacTwNTzjXy8v8WCb6GuH1VW3WGGwIsVfxbEp-BuFhKTLBgpXx434E7NglH_RFUCok_BNt0TfTEGtZ5xIPEvx3BjURWMEE05zICJO8NKbes2E1c0b11tGEMh7SM75",
-//                Notification = new Notification()
-//                {
-//                    Body = "Test",
-//                    Title = "test"
-//                }
-//            };
-//
-//            await _firebaseService.SendPushNotification(message);
-//
-//            
             var result = await _firebaseService.GetUserByEmail(email);
 
             return result != null;
@@ -74,7 +61,7 @@ namespace Visit.Service.BusinessLogic
             if (string.IsNullOrEmpty(res.ToString()))
             {
                 _logger.LogError("User " + currentUser.Email + " Avi not updated");
-                return new UploadImageResponse(false, new ImageErrors()
+                return new UploadImageResponse(false, new ImageErrors
                 {
                     IdentityErrors = null,
                     UploadError = "User " + currentUser.Email + " avi could not be uploaded"
@@ -86,7 +73,7 @@ namespace Visit.Service.BusinessLogic
             _visitContext.User.Update(currentUser);
             await _visitContext.SaveChangesAsync();
             
-            return new UploadImageResponse(true,null);
+            return new UploadImageResponse(true);
 
         }
 
@@ -166,7 +153,7 @@ namespace Visit.Service.BusinessLogic
                 
                 var post = new Post
                 {
-                    PostContentLink = $"",
+                    PostContentLink = "",
                     FkPostType = postType,
                     PostCaption = caption,
                     PostTime = DateTime.UtcNow,

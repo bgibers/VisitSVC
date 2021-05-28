@@ -1,9 +1,8 @@
-﻿﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Visit.DataAccess.Models;
+﻿﻿using Microsoft.EntityFrameworkCore;
+ using Microsoft.Extensions.Configuration;
+ using Visit.DataAccess.Models;
 
-namespace Visit.DataAccess.EntityFramework
+ namespace Visit.DataAccess.EntityFramework
 {
     public class VisitContext : DbContext
     {

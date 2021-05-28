@@ -1,8 +1,6 @@
 using System.Net.Http.Headers;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
@@ -78,11 +76,26 @@ namespace Visit.Service.ApiControllers
             return new OkResult();
         }
 
+        [Authorize]
+        [HttpPost("update/fcm/{deviceId}")]
+        public async Task<ActionResult<bool>> UpdateUserFcm(string deviceId)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _accountsService.UpdateUserFcm(headerValue.Parameter , deviceId);
+            }
+
+            return Unauthorized();
+        }
+        
+
         /// <summary>
         /// Updates the logged in users info
         /// </summary>
         /// <param name="update"></param>
-        /// <param name="claim"></param>
         /// <returns></returns>
         [Authorize]
         [HttpPost("update")]
@@ -96,18 +109,15 @@ namespace Visit.Service.ApiControllers
             {
                 return await _accountsService.UpdateAccountInfo(headerValue.Parameter , update);
             }
-            else
-            {
-                return Unauthorized();
-            }
-            
+
+            return Unauthorized();
+
         }
 
         /// <summary>
         /// Updates the status of world locations
         /// </summary>
         /// <param name="request"></param>
-        /// <param name="claim"></param>
         /// <returns></returns>
         [Authorize]
         [HttpPost("update/locations")]

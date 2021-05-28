@@ -1,8 +1,5 @@
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Visit.DataAccess.Models;
 using Visit.Service.Models;
 using Visit.Service.Models.Requests;
 using Visit.Service.Models.Responses;

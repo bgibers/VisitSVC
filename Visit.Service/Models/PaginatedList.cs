@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Visit.DataAccess.Models;
-using Visit.Service.Models.Responses;
 
 namespace Visit.Service.Models
 {
@@ -23,8 +21,8 @@ namespace Visit.Service.Models
             PageIndex = pageIndex;
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);
 
-            this.Items = new List<T>();
-            this.Items.AddRange(items);
+            Items = new List<T>();
+            Items.AddRange(items);
         }
 
         public bool HasPreviousPage

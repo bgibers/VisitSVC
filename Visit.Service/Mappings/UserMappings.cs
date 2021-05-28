@@ -1,6 +1,5 @@
 using AutoMapper;
 using Visit.DataAccess.Models;
-using Visit.Service.Models;
 using Visit.Service.Models.Requests;
 using Visit.Service.Models.Responses;
 

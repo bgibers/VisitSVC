@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Visit.DataAccess.Models;
 using Visit.Service.Models.Responses;
 
 namespace Visit.Service.BusinessLogic.Interfaces
