@@ -99,6 +99,7 @@ namespace Visit.Service.BusinessLogic
         {
             var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
             var user = await _visitContext.User.FindAsync(userId);
+            user.FcmToken = deviceId;
             
             _visitContext.User.Update(user);
             await _visitContext.SaveChangesAsync();
