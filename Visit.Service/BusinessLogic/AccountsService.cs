@@ -66,7 +66,7 @@ namespace Visit.Service.BusinessLogic
         {
             var result = await _firebaseService.GetUserFromToken(jwt);
             
-            return result != null;
+            return result == null;
         }
 
         public async Task<UploadImageResponse> UpdateProfileImage(string claim, IFormFile image)
