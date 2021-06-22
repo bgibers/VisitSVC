@@ -61,8 +61,9 @@ namespace Visit.Service.BusinessLogic
 
         public async Task<FirebaseToken> GetUserFromToken(string uuid)
         {
-            return await _firebaseAuth.VerifyIdTokenAsync(uuid);
+             return await _firebaseAuth.VerifyIdTokenAsync(uuid);
         }
+        
 
         public async Task<bool> CheckIfUserIsVerified(string uuid)
         {

@@ -12,8 +12,6 @@ namespace Visit.Service.BusinessLogic.Interfaces
         Task<bool> UpdateAccountInfo(string claim, UpdateUserInfoRequest request);
         Task<int> ChangeLocationStatus(string claim, MarkLocationsRequest request);
         Task<bool> EmailAlreadyTaken(string email);
-        Task<bool> IsFirstLogin(string jwt);
-
         /// <summary>
         /// Update the users FCM record. Used for sending push notifications
         /// </summary>

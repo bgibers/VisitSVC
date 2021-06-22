@@ -62,13 +62,6 @@ namespace Visit.Service.BusinessLogic
             return result != null;
         }
 
-        public async Task<bool> IsFirstLogin(string jwt)
-        {
-            var result = await _firebaseService.GetUserFromToken(jwt);
-            
-            return result == null;
-        }
-
         public async Task<UploadImageResponse> UpdateProfileImage(string claim, IFormFile image)
         {
             var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;

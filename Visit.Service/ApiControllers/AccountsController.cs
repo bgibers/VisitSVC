@@ -45,18 +45,6 @@ namespace Visit.Service.ApiControllers
         }
         
         /// <summary>
-        /// Checks if the user has ever logged in via sso
-        /// </summary>
-        /// <param name="jwt"></param>
-        /// <returns></returns>
-        [HttpGet("first_login")]
-        [ProducesResponseType(200)]
-        public async Task<ActionResult<bool>> IsFirstLogin(string jwt)
-        { 
-            return await _accountsService.IsFirstLogin(jwt);
-        }
-
-        /// <summary>
         /// Updates the logged in users profile img
         /// </summary>
         /// <param name="image"></param>
