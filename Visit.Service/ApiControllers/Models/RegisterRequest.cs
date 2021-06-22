@@ -8,8 +8,8 @@ namespace Visit.Service.Models.Requests
         [EmailAddress]
         public string Email { get; set; }
         
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8}$", 
-            ErrorMessage = "Password must meet requirements")]
+//        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8}$", 
+//            ErrorMessage = "Password must meet requirements")]
         public string Password { get; set; }
         
         public string Firstname { get; set; }
@@ -17,7 +17,7 @@ namespace Visit.Service.Models.Requests
         public DateTime? Birthday { get; set; }
         public string Title { get; set; }
         public string Education { get; set; }
-        public long FacebookId { get; set; }
+        public bool Sso { get; set; }
         public string BirthLocation { get; set; }
         public string ResidenceLocation { get; set; }
     }
