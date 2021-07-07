@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
+using Visit.Service.ApiControllers.Models;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models.Requests;
 

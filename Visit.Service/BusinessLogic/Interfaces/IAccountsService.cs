@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Visit.Service.ApiControllers.Models;
 using Visit.Service.Models.Requests;
 using Visit.Service.Models.Responses;
 

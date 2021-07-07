@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
+using Visit.Service.ApiControllers.Models;
 using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models.Enums;
@@ -150,35 +151,39 @@ namespace Visit.Service.BusinessLogic
                     _visitContext.UserLocation.Add(userLocation);
                 }
 
-                var caption = "";
-                PostType postType;
-                if (value == "toVisit")
+                // If this isn't registration add the post to the timeline
+                if (!request.Registration)
                 {
-                    caption = $"Wants to venture {location.LocationName}. Any thoughts?";
-                    postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "toVisit");
-                }
-                else
-                {
-                    caption = $"Has visited {location.LocationName}. Ask them about it!";
-                    postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "visited");
-                }
+                    var caption = "";
+                    PostType postType;
+                    if (value == "toVisit")
+                    {
+                        caption = $"Has added {location.LocationName} to their bucket list. Any thoughts?";
+                        postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "toVisit");
+                    }
+                    else
+                    {
+                        caption = $"Has visited {location.LocationName}. Ask them about it!";
+                        postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "visited");
+                    }
                 
-                var post = new Post
-                {
-                    PostContentLink = "",
-                    FkPostType = postType,
-                    PostCaption = caption,
-                    PostTime = DateTime.UtcNow,
-                    FkUser = user
-                };
+                    var post = new Post
+                    {
+                        PostContentLink = "",
+                        FkPostType = postType,
+                        PostCaption = caption,
+                        PostTime = DateTime.UtcNow,
+                        FkUser = user
+                    };
                 
-                _visitContext.Post.Add(post);
+                    _visitContext.Post.Add(post);
 
-                _visitContext.PostUserLocation.Add(new PostUserLocation
-                {
-                    FkLocation = userLocation,
-                    FkPost = post
-                });
+                    _visitContext.PostUserLocation.Add(new PostUserLocation
+                    {
+                        FkLocation = userLocation,
+                        FkPost = post
+                    });
+                }
             }
             
             return  await _visitContext.SaveChangesAsync();
