@@ -238,6 +238,10 @@ namespace Visit.Service.BusinessLogic
                     Notification = new Notification()
                     {
                         Body = $"{userLiking.Firstname} {userLiking.Lastname} liked your post."
+                    },
+                    Data = new Dictionary<string, string>()
+                    {
+                        {"postId", postId}
                     }
                 };
 
@@ -278,6 +282,10 @@ namespace Visit.Service.BusinessLogic
                     Notification = new Notification()
                     {
                         Body = $"{userLiking.Firstname} {userLiking.Lastname} commented {comment}"
+                    },
+                    Data = new Dictionary<string, string>()
+                    {
+                        {"postId", postId}
                     }
                 };
 
