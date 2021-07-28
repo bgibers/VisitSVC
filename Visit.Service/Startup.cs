@@ -182,7 +182,7 @@
 
          private static void AddFireBase(IServiceCollection services, IConfiguration configuration)
          {
-             var path = Path.Combine(Directory.GetCurrentDirectory(), "Secrets", "firebase_admin_sdk.json");
+             var path = Path.Combine(Directory.GetCurrentDirectory(), "Secrets", configuration.GetSection("Firebase:fileName").Value);
              FirebaseApp app;
              try
              {
