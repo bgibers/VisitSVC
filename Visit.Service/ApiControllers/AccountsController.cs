@@ -1,14 +1,12 @@
-using System.Security.Claims;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Visit.DataAccess.Auth;
-using Visit.DataAccess.Models;
+using Microsoft.Net.Http.Headers;
+using Visit.Service.ApiControllers.Models;
 using Visit.Service.BusinessLogic.Interfaces;
-using Visit.Service.Models;
 using Visit.Service.Models.Requests;
-using Visit.Service.Models.Responses;
 
 namespace Visit.Service.ApiControllers
 {
@@ -30,33 +28,9 @@ namespace Visit.Service.ApiControllers
         [HttpPost("register")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<JwtToken>> Register([FromForm] RegisterRequest request)
+        public async Task<ActionResult<string>> Register([FromBody] RegisterRequest request)
         {
-//            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var response = await _accountsService.RegisterUser(request);
-
-            if (!response.Success)
-            {
-                return BadRequest(response.Errors);
-            }
-
-            return response.JwtToken;
-        }
-        
-        /// <summary>
-        /// Login
-        /// </summary>
-        /// <param name="requestApi"></param>
-        /// <returns></returns>
-        [HttpPost("login")]
-        [ProducesResponseType(200)]
-        public async Task<ActionResult<JwtToken>> Login([FromBody] LoginApiRequest requestApi)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            // Todo create a response for logging in user
-            return await _accountsService.LoginUser(requestApi);
+            return await _accountsService.RegisterUser(request);
         }
         
         /// <summary>
@@ -75,130 +49,95 @@ namespace Visit.Service.ApiControllers
         /// Updates the logged in users profile img
         /// </summary>
         /// <param name="image"></param>
+        /// <param name="claim"></param>
         /// <returns></returns>
-        [Authorize(Policy = "VisitUser")]
+        [Authorize]
         [HttpPost("update/profile_image")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<bool>> UpdateProfileImage(IFormFile image)
+        public async Task<ActionResult<bool>> UpdateProfileImage([FromForm]IFormFile image)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            var user = User.FindFirst(ClaimTypes.NameIdentifier);
-            var response = await _accountsService.UpdateProfileImage(user ,image);
-            
-            if (!response.Success)
-            {
-                return BadRequest(response.Errors);
-            }
 
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                var response = await _accountsService.UpdateProfileImage(headerValue.Parameter , image);
+            
+                if (!response.Success)
+                {
+                    return BadRequest(response.Errors);
+                }
+            }
+            else
+            {
+                return Unauthorized();
+            }
+            
             return new OkResult();
         }
+
+        [Authorize]
+        [HttpPost("update/fcm/{deviceId}")]
+        public async Task<ActionResult<bool>> UpdateUserFcm(string deviceId)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _accountsService.UpdateUserFcm(headerValue.Parameter , deviceId);
+            }
+
+            return Unauthorized();
+        }
         
+
+        /// <summary>
+        /// Updates the logged in users info
+        /// </summary>
+        /// <param name="update"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost("update")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> UpdateAccountInfo(UpdateUserInfoRequest update)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _accountsService.UpdateAccountInfo(headerValue.Parameter , update);
+            }
+
+            return Unauthorized();
+
+        }
+
         /// <summary>
         /// Updates the status of world locations
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [Authorize(Policy = "VisitUser")]
+        [Authorize]
         [HttpPost("update/locations")]
         [ProducesResponseType(200)]
         public async Task<ActionResult<bool>> UpdateLocationStatus([FromBody] MarkLocationsRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            
-            var user = User.FindFirst(ClaimTypes.NameIdentifier);
-            await _accountsService.ChangeLocationStatus(user, request);
+            var authorization = Request.Headers[HeaderNames.Authorization];
 
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                await _accountsService.ChangeLocationStatus(headerValue.Parameter, request);
+            }
+            else
+            {
+                return Unauthorized();
+            }
+            
             return true;
         }
-
-//        [HttpPost("confirm")]
-//        [ProducesResponseType(typeof(CodeConfirmResult),200)]
-//        public async Task<IActionResult> ConfirmRegister([FromBody]CodeConfirmRequest api)
-//        {
-//
-//            if (!ModelState.IsValid) return BadRequest(ModelState);
-//
-//            var user = await _userManager.FindByEmailAsync(api.Email).ConfigureAwait(false);
-//
-//            if (user == null)
-//            {
-//                ModelState.AddModelError("NotFound", "Username or email not found");
-//                return BadRequest(ModelState);
-//            }
-//
-//            var result = await (_userManager as CognitoUserManager<CognitoUser>)
-//                    .ConfirmSignUpAsync(user, api.Code, true).ConfigureAwait(false);
-//
-//            if (result.Succeeded) return Ok();
-//
-//            result.Errors.ToList().ForEach(u => ModelState.AddModelError(u.Code, u.Description));
-//
-//            return BadRequest(ModelState);
-//
-//
-//        }
-//
-//        // https://github.com/aws/aws-aspnet-cognito-identity-provider/blob/master/docs/5-User%20Management%20-%20Change%20and%20reset%20passwords.md
-//        [HttpPost("password/change")]
-//        [ProducesResponseType(typeof(bool),200)]
-//        public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordRequest model)
-//        {
-//            if (!ModelState.IsValid) return BadRequest(ModelState);
-//
-//            var user = await _userManager.FindByEmailAsync(model.Email);
-//
-//            var result = await (_userManager as CognitoUserManager<CognitoUser>)
-//                    .ChangePasswordAsync(user,model.OldPassword,model.NewPassword);
-//
-//            if (result.Succeeded) return Ok();
-//
-//            result.Errors.ToList().ForEach(u => ModelState.AddModelError(u.Code, u.Description));
-//
-//            return BadRequest(ModelState);
-//        }
-//
-//        [HttpPost("password/forgot")]
-//        [ProducesResponseType(typeof(bool),200)]
-//        public async Task<IActionResult> ForgotPassword([FromBody]ResetPasswordRequest model)
-//        {
-//            if (!ModelState.IsValid) return BadRequest(ModelState);
-//            
-//            var user = await _userManager.FindByEmailAsync(model.Email);
-//
-//            var result = await (_userManager as CognitoUserManager<CognitoUser>)
-//                    .ResetPasswordAsync(user);
-//
-//           if (result.Succeeded) return Ok();
-//
-//            result.Errors.ToList().ForEach(u => ModelState.AddModelError(u.Code, u.Description));
-//
-//            return BadRequest(ModelState);
-//        }
-//
-//
-//        [HttpPost("password/confirmreset")]
-//        [ProducesResponseType(typeof(CodeConfirmResult),200)]
-//        public async Task<IActionResult> ConfirmResetPassword([FromBody]SetNewPasswordWithCodeRequest model)
-//        {
-//
-//            if (!ModelState.IsValid) return BadRequest(ModelState);
-//
-//            var user = await _userManager.FindByEmailAsync(model.Email).ConfigureAwait(false);
-//
-//            if (user == null)
-//            {
-//                ModelState.AddModelError("NotFound", "Username or email not found");
-//                return BadRequest(ModelState);
-//            }
-//
-//            var result = await (_userManager as CognitoUserManager<CognitoUser>)
-//                    .ResetPasswordAsync(user, model.Code, model.NewPassword);
-//
-//            if (result.Succeeded) return Ok();
-//
-//            result.Errors.ToList().ForEach(u => ModelState.AddModelError(u.Code, u.Description));
-//
-//            return BadRequest(ModelState);
-//        }
     }
 }

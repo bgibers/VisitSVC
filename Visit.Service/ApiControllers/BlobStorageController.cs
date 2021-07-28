@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -25,14 +26,14 @@ namespace Visit.Service.ApiControllers
         }
 
         [HttpPost("UploadFile")]
-        public async Task<IActionResult> UploadFile(string fileName, IFormFile asset)
+        public async Task<ActionResult<Uri>> UploadFile(string filePath, IFormFile asset)
         {
-            return Ok(await _blobStorageBusinessLogic.UploadBlob(fileName, asset));
+            return await _blobStorageBusinessLogic.UploadBlob(filePath, asset, Guid.NewGuid());
         }
 
         [HttpGet("DownloadFile/{fileName}")]
         [ProducesResponseType(typeof(string), 200)]
-        public async Task<string> DownloadFile(string fileName)
+        public async Task<ActionResult<string>> DownloadFile(string fileName)
         {
             return await _blobStorageBusinessLogic.GetBlobContents(fileName);
         }
@@ -40,9 +41,9 @@ namespace Visit.Service.ApiControllers
 
         [Route("DeleteFile/{fileName}")]
         [HttpGet]
-        public async Task<IActionResult> DeleteFile(string fileName)
+        public async Task<ActionResult<bool>> DeleteFile(string fileName)
         {
-            return Ok(await _blobStorageBusinessLogic.DeleteBlobIfExists(fileName));
+            return await _blobStorageBusinessLogic.DeleteBlobIfExists(fileName);
         }
     }
 }

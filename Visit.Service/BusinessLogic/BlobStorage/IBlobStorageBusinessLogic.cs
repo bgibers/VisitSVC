@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -12,7 +13,7 @@ namespace Visit.Service.BusinessLogic.BlobStorage
         Task<bool> VerifyContainersExistence();
         Task<bool> CheckBlobExistence(string blobName);
         Task<bool> DeleteBlobIfExists(string blobName);
-        Task<bool> UploadBlob(string blobPath, IFormFile body);
+        Task<Uri> UploadBlob(string blobPath, IFormFile body, Guid fileName);
         Task<string> GetBlobContents(string blobName);
         BlobClient GetBlob(string blobPath);
         IEnumerable<string> ListDirectoryContents(string directory);

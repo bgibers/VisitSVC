@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Identity;
 
 namespace Visit.DataAccess.Models
 {
-    public class User : IdentityUser
+    public sealed class User
     {
         public User()
         {
@@ -17,7 +16,11 @@ namespace Visit.DataAccess.Models
             UserMessageFkRecieverUser = new HashSet<UserMessage>();
             UserMessageFkSenderUser = new HashSet<UserMessage>();
         }
-
+        
+        public string Id { get; set; }
+        
+        public string FcmToken { get; set; }
+        public string Email { get; set; }
         public string Firstname { get; set; }
         public string Lastname { get; set; }
         public DateTime? Birthday { get; set; }
@@ -36,24 +39,23 @@ namespace Visit.DataAccess.Models
         public string Avi { get; set; }
         public int? FkBirthLocationId { get; set; }
         public int? FkResidenceLocationId { get; set; }
-        public long? FacebookId { get; set; }
-        public virtual Location FkBirthLocation { get; set; }
-        public virtual Location FkResidenceLocation { get; set; }
-        public virtual ICollection<Like> Like { get; set; }
-        public virtual ICollection<Post> Post { get; set; }
-        public virtual ICollection<PostComment> PostComment { get; set; }
+        public Location FkBirthLocation { get; set; }
+        public Location FkResidenceLocation { get; set; }
+        public ICollection<Like> Like { get; set; }
+        public ICollection<Post> Post { get; set; }
+        public ICollection<PostComment> PostComment { get; set; }
         
         /// <summary>
         ///  All people user is following
         /// </summary>
-        public virtual ICollection<UserFollowing> UserFollowingFkFollowUser { get; set; }
+        public ICollection<UserFollowing> UserFollowingFkFollowUser { get; set; }
         
         /// <summary>
         /// Everyone following this user
         /// </summary>
-        public virtual ICollection<UserFollowing> UserFollowingFkMainUser { get; set; }
-        public virtual ICollection<UserLocation> UserLocation { get; set; }
-        public virtual ICollection<UserMessage> UserMessageFkRecieverUser { get; set; }
-        public virtual ICollection<UserMessage> UserMessageFkSenderUser { get; set; }
+        public ICollection<UserFollowing> UserFollowingFkMainUser { get; set; }
+        public ICollection<UserLocation> UserLocation { get; set; }
+        public ICollection<UserMessage> UserMessageFkRecieverUser { get; set; }
+        public ICollection<UserMessage> UserMessageFkSenderUser { get; set; }
     }
 }

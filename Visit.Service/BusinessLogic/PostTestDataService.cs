@@ -27,7 +27,6 @@ namespace Visit.Service.BusinessLogic
                     Avi = "sometesturl",
                     Birthday = DateTime.Today,
                     Email = "testuser1@gmail.com",
-                    UserName = "TestUser1",
                     Firstname = "TestUser1",
                     FkBirthLocation = _visitContext.Location.First(l => l.LocationCode == "US-MA"),
                     FkResidenceLocation = _visitContext.Location.First(l => l.LocationCode == "US-SC"),
@@ -39,7 +38,6 @@ namespace Visit.Service.BusinessLogic
                     Avi = "sometesturl",
                     Birthday = DateTime.Today,
                     Email = "testuser2@gmail.com",
-                    UserName = "TestUser2",
                     Firstname = "TestUser2",
                     FkBirthLocation = _visitContext.Location.First(l => l.LocationCode == "US-NC"),
                     FkResidenceLocation = _visitContext.Location.First(l => l.LocationCode == "US-FL"),
@@ -93,6 +91,7 @@ namespace Visit.Service.BusinessLogic
                 PostContentLink = "testlinktest",
                 PostCaption = location.FkLocation.LocationCode,
                 ReviewRating = 5,
+                PostTime = DateTime.UtcNow,
                 FkUser = location.FkUser
             };
             _visitContext.Post.Add(post);

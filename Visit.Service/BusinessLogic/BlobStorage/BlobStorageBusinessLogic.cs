@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Visit.Service.Config;
 
 namespace Visit.Service.BusinessLogic.BlobStorage
@@ -34,6 +34,7 @@ namespace Visit.Service.BusinessLogic.BlobStorage
             _logger = logger;
             _storageContainer = new BlobContainerClient(config.Value.StorageConnection, config.Value.Container);
             _storageContainer.CreateIfNotExists();
+            _storageContainer.SetAccessPolicy(PublicAccessType.Blob);
 
             _accountName = _storageContainer.AccountName;
         }
@@ -67,24 +68,27 @@ namespace Visit.Service.BusinessLogic.BlobStorage
         }
 
         /// <inheritdoc />
-        public async Task<bool> UploadBlob(string blobPath, IFormFile file)
+        public async Task<Uri> UploadBlob(string blobPath, IFormFile file, Guid fileName)
         {
             try
             {
-                var blob = GetBlob($"{blobPath}/{file.FileName}");
-
+                var blob = GetBlob($"{blobPath}/{fileName}.jpg");
+                BlobHttpHeaders httpHeaders = new BlobHttpHeaders
+                { 
+                    ContentType = "image/jpeg"
+                };
                 using (var stream = file.OpenReadStream())
                 {
-                    await blob.UploadAsync(stream, true);
+                   await blob.UploadAsync(stream, httpHeaders);
+                   _logger.LogInformation($"Blob at {blobPath} uploaded successfully");
+                   return blob.Uri;
                 }
-
-                _logger.LogInformation($"Blob at {blobPath} uploaded successfully");
-                return true;
+                
             }
             catch (Exception e)
             {
-                _logger.LogError($"Blob at {blobPath} could not upload: {e}");
-                return false;
+                _logger.LogError($"Blob: {JsonConvert.SerializeObject(file)} at {blobPath} could not upload: {e}");
+                return new Uri("");
             }
         }
 

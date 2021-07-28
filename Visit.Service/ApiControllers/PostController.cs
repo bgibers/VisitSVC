@@ -1,94 +1,191 @@
 using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Visit.DataAccess.EntityFramework;
-using Visit.DataAccess.Models;
+using Microsoft.Net.Http.Headers;
+using Visit.Service.BusinessLogic.Interfaces;
+using Visit.Service.Models;
+using Visit.Service.Models.Requests;
+using Visit.Service.Models.Responses;
 
 namespace Visit.Service.ApiControllers
 {
-    [Route("api/[controller]")]
+    [Route("posts")]
     [ApiController]
     public class PostController : ControllerBase
     {
-        private readonly VisitContext _context;
+        private readonly IPostService _postService;
 
-        public PostController(VisitContext context)
+        public PostController(IPostService postService)
         {
-            _context = context;
+            _postService = postService;
         }
+        
+        /// <summary>
+        /// Get posts by page. Each page is 50 results
+        /// </summary>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        [HttpGet("{page}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPage(int page)
+        { 
+            var authorization = Request.Headers[HeaderNames.Authorization];
 
-        // GET: api/Post
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Post>>> GetPost()
-        {
-            return await _context.Post.ToListAsync();
-        }
-
-        // GET: api/Post/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Post>> GetPost(int id)
-        {
-            var post = await _context.Post.FindAsync(id);
-
-            if (post == null) return NotFound();
-
-            return post;
-        }
-
-        // PUT: api/Post/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPost(int id, Post post)
-        {
-            if (id != post.PostId) return BadRequest();
-
-            _context.Entry(post).State = EntityState.Modified;
-
-            try
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PostExists(id))
-                    return NotFound();
-                throw;
+                return await _postService.GetPostsByPage(headerValue.Parameter, page);
             }
 
-            return NoContent();
+            return Unauthorized();
         }
 
-        // POST: api/Post
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPost]
-        public async Task<ActionResult<Post>> PostPost(Post post)
-        {
-            _context.Post.Add(post);
-            await _context.SaveChangesAsync();
+        /// <summary>
+        /// Get posts by page. Each page is 50 results
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="filter"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("{page}/{filter}/{userId}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPageWithFilterByUserId(int page, string filter = "", string userId = "")
+        { 
+            var authorization = Request.Headers[HeaderNames.Authorization];
 
-            return CreatedAtAction("GetPost", new {id = post.PostId}, post);
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _postService.GetPostsByPage(headerValue.Parameter, page, filter, userId);
+            }
+
+            return Unauthorized();
+        }
+        
+        /// <summary>
+        /// Get posts by page. Each page is 50 results
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("{page}/user/{userId}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPageByUserId(int page, string userId = "")
+        { 
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _postService.GetPostsByPage(headerValue.Parameter, page, "", userId);
+            }
+
+            return Unauthorized();
+        }
+        
+        /// <summary>
+        /// Get posts by page. Each page is 50 results
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpGet("{page}/filter/{filter}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<PaginatedList<PostApi>>> GetPostsForPageWithFilter(int page, string filter = "")
+        { 
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _postService.GetPostsByPage(headerValue.Parameter, page, filter);
+            }
+
+            return Unauthorized();
+            
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="post"></param>
+        /// <returns></returns>
+        [HttpPost("new")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<NewPostResponse>> AddNewPost([FromForm] CreatePostRequest post)
+        { 
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _postService.CreatePost(headerValue.Parameter, post);
+            }
+
+            return Unauthorized();
+            
+            
         }
 
-        // DELETE: api/Post/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Post>> DeletePost(int id)
-        {
-            var post = await _context.Post.FindAsync(id);
-            if (post == null) return NotFound();
+        #region Likes and comments
 
-            _context.Post.Remove(post);
-            await _context.SaveChangesAsync();
+        /// <summary>
+        /// LIke a post by its Id
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [HttpPost("like/{postId}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> LikePost(string postId)
+        { 
+            var authorization = Request.Headers[HeaderNames.Authorization];
 
-            return post;
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _postService.LikePost(headerValue.Parameter, postId);
+            }
+            return Unauthorized();
+        }
+        
+        /// <summary>
+        /// Get likes for a post by its Id
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [HttpGet("likes/get/{postId}")]
+        [ProducesResponseType(200)]
+        public ActionResult<List<LikeForPost>> GetAllLikesForPost(string postId)
+        { 
+            return _postService.GetLikesForPost(postId);
         }
 
-        private bool PostExists(int id)
-        {
-            return _context.Post.Any(e => e.PostId == id);
+        /// <summary>
+        /// Comment on a post by its Id
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="comment"></param>
+        /// <returns></returns>
+        [HttpPost("comment/{postId}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> CommentOnPost(string postId, [FromBody] CommentApi comment)
+        { 
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _postService.CommentOnPost(headerValue.Parameter, postId, comment.Comment);
+            }
+            return Unauthorized();
         }
+        
+        /// <summary>
+        /// Get comments for a post by its ID
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [HttpGet("comments/get/{postId}")]
+        [ProducesResponseType(200)]
+        public ActionResult<List<CommentForPost>> GetAllCommentsForPost(string postId)
+        { 
+            return _postService.GetCommentsForPost(postId);
+        }
+
+        #endregion
     }
 }

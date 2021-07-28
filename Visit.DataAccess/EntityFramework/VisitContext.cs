@@ -1,11 +1,10 @@
-﻿﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Visit.DataAccess.Models;
+﻿﻿using Microsoft.EntityFrameworkCore;
+ using Microsoft.Extensions.Configuration;
+ using Visit.DataAccess.Models;
 
-namespace Visit.DataAccess.EntityFramework
+ namespace Visit.DataAccess.EntityFramework
 {
-    public class VisitContext : IdentityDbContext<User>
+    public class VisitContext : DbContext
     {
         private readonly IConfiguration _configuration;
         
@@ -146,6 +145,10 @@ namespace Visit.DataAccess.EntityFramework
 
                 entity.Property(e => e.PostId).HasColumnType("int(11)");
 
+                entity.Property(e => e.PostTime)
+                    .HasColumnName("PostTime")
+                    .HasColumnType("datetime");
+                
                 entity.Property(e => e.FkPostTypeId)
                     .HasColumnName("FK_Post_TypeId")
                     .HasColumnType("int(11)");

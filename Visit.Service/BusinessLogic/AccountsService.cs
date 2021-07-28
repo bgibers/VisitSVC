@@ -1,17 +1,13 @@
 using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
+using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Visit.DataAccess.Auth;
-using Visit.DataAccess.Auth.Helpers;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
+using Visit.Service.ApiControllers.Models;
 using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models.Enums;
@@ -24,154 +20,175 @@ namespace Visit.Service.BusinessLogic
     {
         private readonly ILogger<AccountsService> _logger;
         private readonly IMapper _mapper;
-        private readonly IJwtFactory _jwtFactory;
-        private readonly JwtIssuerOptions _jwtOptions;
         private readonly VisitContext _visitContext;
-        private readonly UserManager<User> _userManager;
         private readonly IBlobStorageBusinessLogic _blobStorage;
-
-        public AccountsService(ILogger<AccountsService> logger, IMapper mapper, IJwtFactory jwtFactory, 
-            IOptions<JwtIssuerOptions> jwtOptions, VisitContext visitContext, 
-            UserManager<User> userManager, IBlobStorageBusinessLogic blobStorage)
+        private readonly IFirebaseService _firebaseService;
+        
+        public AccountsService(ILogger<AccountsService> logger, IMapper mapper, VisitContext visitContext, 
+            IBlobStorageBusinessLogic blobStorage, IFirebaseService firebaseService)
         {
             _logger = logger;
             _mapper = mapper;
-            _jwtFactory = jwtFactory;
-            _jwtOptions = jwtOptions.Value;
             _visitContext = visitContext;
-            _userManager = userManager;
             _blobStorage = blobStorage;
+            _firebaseService = firebaseService;
         }
         
-        public async Task<CreateUserResponse> RegisterUser(RegisterRequest model)
+        public async Task<string> RegisterUser(RegisterRequest model)
         {
             var userIdentity = _mapper.Map<User>(model);
-            userIdentity.UserName = model.Email;
-            var result = await _userManager.CreateAsync(userIdentity, model.Password);
+            UserRecord result;
             
-            if (!result.Succeeded)
+            if (model.Sso)
             {
-                _logger.LogError($"Could not create user: {result.Errors}");
-                return new CreateUserResponse(null, false, result.Errors);
-            }
-
-            await _visitContext.SaveChangesAsync();
-            
-            // Try to get a claim and uplaod image. Prob need some logging/retry handling here
-            var claim = await GetClaimsIdentity(model.Email, model.Password);
-            await UpdateProfileImage(claim.Claims.Single(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"), model.Avi);
-            
-            var token = await LoginUser(new LoginApiRequest()
-            {
-                UserName = model.Email,
-                Password = model.Password
-            });
-            
-            return new CreateUserResponse(token,true,null);
-        }
-        
-        public async Task<JwtToken> LoginUser(LoginApiRequest credentials)
-        {
-            var identity = await GetClaimsIdentity(credentials.UserName, credentials.Password);
-            
-            if (identity == null)
-            {
-                return null;
-            }
-            
-            return JsonConvert.DeserializeObject<JwtToken>(
-                await Tokens.GenerateJwt(identity, _jwtFactory, identity.Name, _jwtOptions, 
-                new JsonSerializerSettings { Formatting = Formatting.Indented }));
-        }
-        
-        private async Task<ClaimsIdentity> GetClaimsIdentity(string userName, string password)
-        {
-            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
-                return await Task.FromResult<ClaimsIdentity>(null);
-            
-            User userToVerify;
-            if (userName.Contains('@'))
-            {
-                userToVerify = await _userManager.FindByEmailAsync(userName);
+                result = await _firebaseService.GetUserByEmail(model.Email);
+                userIdentity.Id = result.Uid;
             }
             else
             {
-                userToVerify = await _userManager.FindByNameAsync(userName);
+                result = await _firebaseService.CreateUser(model.Email, model.Password);
+                userIdentity.Id = result.Uid;
             }
 
-            if (userToVerify == null) return await Task.FromResult<ClaimsIdentity>(null);
-
-            // check the credentials
-            if (await _userManager.CheckPasswordAsync(userToVerify, password))
-            {
-                return await Task.FromResult(_jwtFactory.GenerateClaimsIdentity(userToVerify.UserName, userToVerify.Id));
-            }
-
-            // Credentials are invalid, or account doesn't exist
-            return await Task.FromResult<ClaimsIdentity>(null);
+            await _visitContext.User.AddAsync(userIdentity);
+            await _visitContext.SaveChangesAsync();
+                
+            return await _firebaseService.CustomJwt(result.Uid);
         }
-
+        
         public async Task<bool> EmailAlreadyTaken(string email)
         {
-            var result = await _userManager.FindByEmailAsync(email);
+            var result = await _firebaseService.GetUserByEmail(email);
 
             return result != null;
         }
-        
-        public async Task<UploadImageResponse> UpdateProfileImage(Claim claim, IFormFile image)
-        {
-            var currentUser = await _userManager.FindByNameAsync(claim.Value);
 
-            if (!await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image))
+        public async Task<UploadImageResponse> UpdateProfileImage(string claim, IFormFile image)
+        {
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var currentUser = await _visitContext.User.FindAsync(userId);
+            
+            var fileName = Guid.NewGuid();
+            var res = await _blobStorage.UploadBlob($"{currentUser.Id}/ProfilePics", image, fileName);
+            if (string.IsNullOrEmpty(res.ToString()))
             {
-                _logger.LogError("User " + currentUser.UserName + " Avi not updated");
-                return new UploadImageResponse(false, new ImageErrors()
+                _logger.LogError("User " + currentUser.Email + " Avi not updated");
+                return new UploadImageResponse(false, new ImageErrors
                 {
                     IdentityErrors = null,
-                    UploadError = "User " + currentUser.UserName + " avi could not be uploaded"
+                    UploadError = "User " + currentUser.Email + " avi could not be uploaded"
                 });
             }
+
+            currentUser.Avi = res.ToString();
             
-            currentUser.Avi = $"{currentUser.Id}/ProfilePics/{image.Name}";
+            _visitContext.User.Update(currentUser);
+            await _visitContext.SaveChangesAsync();
             
-            var result = await _userManager.UpdateAsync(currentUser);
-            if (!result.Succeeded)
-            {
-                _logger.LogError($"Could not create user: {result.Errors}");
-                return new UploadImageResponse(false, new ImageErrors()
-                {
-                    IdentityErrors = result.Errors,
-                    UploadError = ""
-                });
-            }
-            
-            return new UploadImageResponse(true,null);
+            return new UploadImageResponse(true);
 
         }
 
-        public async Task<int> ChangeLocationStatus(Claim claim, MarkLocationsRequest request)
+        public async Task<bool> UpdateAccountInfo(string claim, UpdateUserInfoRequest request)
         {
-            var user = await _userManager.FindByNameAsync(claim.Value);
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
+            
+            user.Education = request.Education;
+            user.Firstname = request.Firstname;
+            user.Lastname = request.Lastname;
+            user.BirthLocation = request.BirthLocation;
+            user.ResidenceLocation = request.ResidenceLocation;
+            user.Title = request.Title;
 
+            _visitContext.User.Update(user);
+            await _visitContext.SaveChangesAsync();
+            return true;
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> UpdateUserFcm(string claim, string deviceId)
+        {
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
+            user.FcmToken = deviceId;
+            
+            _visitContext.User.Update(user);
+            await _visitContext.SaveChangesAsync();
+            
+            return true;
+        }
+
+        public async Task<int> ChangeLocationStatus(string claim, MarkLocationsRequest request)
+        {
+            var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var user = await _visitContext.User.FindAsync(userId);
+            
             // request.locations contains <locationName,Status>
-            foreach (var i in request.Locations)
+            foreach (var (key, value) in request.Locations)
             {
-                var location = _visitContext.Location.Single(f => f.LocationCode == i.Key);
+                var location = _visitContext.Location.Single(f => f.LocationCode == key);
                 
                 var userLocation = new UserLocation
                 {
-                    Status = i.Value,
+                    Status = value,
                     Venue = "",
                     FkLocation = location,
                     FkUser = user
                 };
                 
-                _visitContext.UserLocation.Add(userLocation);
+                var existingEntry = _visitContext.UserLocation.SingleOrDefault(e =>
+                    e.FkUser == user && e.FkLocation == location && e.Status == value);
+
+                if (existingEntry != null)
+                {
+                    existingEntry.Status = value;
+                    _visitContext.UserLocation.Update(existingEntry);
+                    userLocation = existingEntry;
+                }
+                else
+                {
+                    _visitContext.UserLocation.Add(userLocation);
+                }
+
+                // If this isn't registration add the post to the timeline
+                if (!request.Registration)
+                {
+                    var caption = "";
+                    PostType postType;
+                    if (value == "toVisit")
+                    {
+                        caption = $"Has added {location.LocationName} to their bucket list. Any thoughts?";
+                        postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "toVisit");
+                    }
+                    else
+                    {
+                        caption = $"Has visited {location.LocationName}. Ask them about it!";
+                        postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "visited");
+                    }
+                
+                    var post = new Post
+                    {
+                        PostContentLink = "",
+                        FkPostType = postType,
+                        PostCaption = caption,
+                        PostTime = DateTime.UtcNow,
+                        FkUser = user
+                    };
+                
+                    _visitContext.Post.Add(post);
+
+                    _visitContext.PostUserLocation.Add(new PostUserLocation
+                    {
+                        FkLocation = userLocation,
+                        FkPost = post
+                    });
+                }
             }
             
             return  await _visitContext.SaveChangesAsync();
         }
-        
+
         public async Task<CodeConfirmResult> ConfirmRegister(CodeConfirmRequest model)
         {
             throw new NotImplementedException();
@@ -191,5 +208,6 @@ namespace Visit.Service.BusinessLogic
         {
             throw new NotImplementedException();
         }
+        
     }
 }
