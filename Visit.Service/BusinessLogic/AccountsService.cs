@@ -111,6 +111,15 @@ namespace Visit.Service.BusinessLogic
         {
             var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
             var user = await _visitContext.User.FindAsync(userId);
+
+            var existingFcm =  _visitContext.User.Where(u => u.FcmToken == deviceId);
+
+            foreach (var u in existingFcm)
+            {
+                u.FcmToken = "";
+                _visitContext.User.Update(u);
+            }
+            
             user.FcmToken = deviceId;
             
             _visitContext.User.Update(user);
