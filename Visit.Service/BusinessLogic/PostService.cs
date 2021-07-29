@@ -139,6 +139,42 @@ namespace Visit.Service.BusinessLogic
                 TotalPages = postPaginatedList.TotalPages
             };
         }
+
+        public async Task<PostApi> GetPostById(string claim, int postId)
+        {
+            var user = await _firebaseService.GetUserFromToken(claim);
+
+            var post = await _visitContext.Post.Where(p => p.PostId == postId)
+                .Include(p => p.FkUser)
+                .Include(p => p.FkPostType)
+                .Include(p => p.PostComment)
+                .Include(p => p.Like)
+                .Include(p => p.PostUserLocation)
+                .ThenInclude(p => p.FkLocation.FkLocation)
+                .FirstOrDefaultAsync();
+            
+            var commentCount = post.PostComment.Count;
+            var likeCount = post.Like.Count;
+
+            bool likedByCurrentUser = await _visitContext.Like.AnyAsync(l => l.FkPostId == post.PostId && l.FkUserId == user.Uid);
+            
+            return new PostApi
+            {
+                PostId = post.PostId,
+                FkPostTypeId = post.FkPostTypeId,
+                FkUserId = post.FkUserId,
+                PostContentLink = post.PostContentLink ?? "",
+                PostCaption = post.PostCaption,
+                PostTime = post.PostTime,
+                ReviewRating = post.ReviewRating,
+                FkPostType = post.FkPostType,
+                FkUser = _mapper.Map<UserResponse>(post.FkUser),
+                LikedByCurrentUser = likedByCurrentUser,
+                Location = post.PostUserLocation.SingleOrDefault()?.FkLocation.FkLocation,
+                CommentCount = commentCount,
+                LikeCount = likeCount
+            };
+        } 
         
         public async Task<NewPostResponse> CreatePost(string claim, CreatePostRequest postRequest)
         {
