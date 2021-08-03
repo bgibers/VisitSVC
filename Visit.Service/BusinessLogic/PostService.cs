@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
+using Visit.Service.ApiControllers.Models;
 using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models;
@@ -396,6 +397,12 @@ namespace Visit.Service.BusinessLogic
                 _logger.LogError($"Could not get comments for post {postId}");
                 return new List<CommentForPost>();
             }
+        }
+
+        public async Task<UserRecentNotifications> GetUserRecentNotifications(string claim)
+        {
+            var user = await _firebaseService.GetUserFromToken(claim);
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Visit.DataAccess.Models
 {
-    public class PostUserLocation
+    public partial class PostUserLocation
     {
         public int PostUserLocationId { get; set; }
         public int? FkPostId { get; set; }
