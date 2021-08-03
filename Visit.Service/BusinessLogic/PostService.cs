@@ -283,6 +283,10 @@ namespace Visit.Service.BusinessLogic
                 };
 
                 await _firebaseService.SendPushNotification(message);
+
+                await _visitContext.UserNotification.AddAsync(new UserNotification()
+                {
+                });
                 
                 return true;
             }

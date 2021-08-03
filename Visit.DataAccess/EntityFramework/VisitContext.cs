@@ -525,6 +525,12 @@ namespace Visit.DataAccess.EntityFramework
                 entity.HasKey(e => e.NotificationId)
                     .HasName("PRIMARY");
 
+                entity.HasIndex(e => e.FkPostId)
+                    .HasName("FK_PostId");
+
+                entity.HasIndex(e => e.FkUserId)
+                    .HasName("FK_UserId");
+
                 entity.HasIndex(e => e.LikeId)
                     .HasName("LikeId");
 
@@ -549,6 +555,18 @@ namespace Visit.DataAccess.EntityFramework
                 entity.Property(e => e.LikeId).HasColumnType("int(11)");
 
                 entity.Property(e => e.PostCommentId).HasColumnType("int(11)");
+
+                entity.HasOne(d => d.FkPost)
+                    .WithMany(p => p.UserNotification)
+                    .HasForeignKey(d => d.FkPostId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("UserNotification_ibfk_4");
+
+                entity.HasOne(d => d.FkUser)
+                    .WithMany(p => p.UserNotification)
+                    .HasForeignKey(d => d.FkUserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("UserNotification_ibfk_3");
 
                 entity.HasOne(d => d.Like)
                     .WithMany(p => p.UserNotification)

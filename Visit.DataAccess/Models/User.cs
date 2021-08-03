@@ -15,6 +15,7 @@ namespace Visit.DataAccess.Models
             UserLocation = new HashSet<UserLocation>();
             UserMessageFkRecieverUser = new HashSet<UserMessage>();
             UserMessageFkSenderUser = new HashSet<UserMessage>();
+            UserNotification = new HashSet<UserNotification>();
         }
 
         public string Id { get; set; }
@@ -41,5 +42,6 @@ namespace Visit.DataAccess.Models
         public virtual ICollection<UserLocation> UserLocation { get; set; }
         public virtual ICollection<UserMessage> UserMessageFkRecieverUser { get; set; }
         public virtual ICollection<UserMessage> UserMessageFkSenderUser { get; set; }
+        public virtual ICollection<UserNotification> UserNotification { get; set; }
     }
 }

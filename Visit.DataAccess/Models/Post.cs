@@ -11,6 +11,7 @@ namespace Visit.DataAccess.Models
             PostComment = new HashSet<PostComment>();
             PostTag = new HashSet<PostTag>();
             PostUserLocation = new HashSet<PostUserLocation>();
+            UserNotification = new HashSet<UserNotification>();
         }
 
         public int PostId { get; set; }
@@ -27,5 +28,6 @@ namespace Visit.DataAccess.Models
         public virtual ICollection<PostComment> PostComment { get; set; }
         public virtual ICollection<PostTag> PostTag { get; set; }
         public virtual ICollection<PostUserLocation> PostUserLocation { get; set; }
+        public virtual ICollection<UserNotification> UserNotification { get; set; }
     }
 }
