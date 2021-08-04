@@ -260,12 +260,13 @@ namespace Visit.Service.BusinessLogic
                 {
                     return false;
                 }
-                
-                var like = await _visitContext.Like.AddAsync(new Like
+
+                var like = new Like
                 {
                     FkPost = post,
                     FkUser = userLiking
-                });
+                };
+                await _visitContext.Like.AddAsync(like);
                 
                 await _visitContext.SaveChangesAsync(); 
                 
@@ -289,7 +290,7 @@ namespace Visit.Service.BusinessLogic
                     FkUser = userLiking,
                     FkPost = post,
                     DatetimeOfNot = DateTime.UtcNow,
-                    Like = like.Entity
+                    LikeId = like.LikeId
                 });
                 
                 await _visitContext.SaveChangesAsync(); 
@@ -314,13 +315,14 @@ namespace Visit.Service.BusinessLogic
                 var post = await _visitContext.Post.Include(p => p.FkUser)
                     .FirstOrDefaultAsync(p => p.PostId == int.Parse(postId));
 
-                var commentObj = await _visitContext.PostComment.AddAsync(new PostComment
+                var commentObj = new PostComment
                 {
                     FkPost = post,
                     FkUserIdOfCommentingNavigation = userLiking,
                     DatetimeOfComments = DateTime.UtcNow,
                     CommentText = comment
-                });
+                };
+                await _visitContext.PostComment.AddAsync(commentObj);
                 
                 await _visitContext.SaveChangesAsync();
                 
@@ -344,7 +346,7 @@ namespace Visit.Service.BusinessLogic
                     FkUser = userLiking,
                     FkPost = post,
                     DatetimeOfNot = DateTime.UtcNow,
-                    PostComment = commentObj.Entity
+                    PostCommentId = commentObj.PostCommentId
                 });
                 
                 await _visitContext.SaveChangesAsync(); 
