@@ -35,4 +35,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Visit.DataAccess\Visit.DataAccess.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <Folder Include="DataAccess\Models" />
+    </ItemGroup>
 </Project>

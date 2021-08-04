@@ -287,7 +287,8 @@ namespace Visit.Service.BusinessLogic
 
                 await _visitContext.UserNotification.AddAsync(new UserNotification()
                 {
-                    FkUser = userLiking,
+                    FkUser = post.FkUser,
+                    FkUserWhoNotifiedNavigation = userLiking,
                     FkPost = post,
                     DatetimeOfNot = DateTime.UtcNow,
                     LikeId = like.LikeId
@@ -307,8 +308,8 @@ namespace Visit.Service.BusinessLogic
         
         public async Task<bool> CommentOnPost(string claim, string postId, string comment)
         {
-            var userLikingId = (await _firebaseService.GetUserFromToken(claim)).Uid;
-            var userLiking = await _visitContext.User.FindAsync(userLikingId);
+            var userCommentingId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var userCommenting = await _visitContext.User.FindAsync(userCommentingId);
 
             try
             {
@@ -318,7 +319,7 @@ namespace Visit.Service.BusinessLogic
                 var commentObj = new PostComment
                 {
                     FkPost = post,
-                    FkUserIdOfCommentingNavigation = userLiking,
+                    FkUserIdOfCommentingNavigation = userCommenting,
                     DatetimeOfComments = DateTime.UtcNow,
                     CommentText = comment
                 };
@@ -331,7 +332,7 @@ namespace Visit.Service.BusinessLogic
                     Token = post.FkUser.FcmToken,
                     Notification = new Notification()
                     {
-                        Body = $"{userLiking.Firstname} {userLiking.Lastname} commented {comment}"
+                        Body = $"{userCommenting.Firstname} {userCommenting.Lastname} commented {comment}"
                     },
                     Data = new Dictionary<string, string>()
                     {
@@ -343,7 +344,8 @@ namespace Visit.Service.BusinessLogic
 
                 await _visitContext.UserNotification.AddAsync(new UserNotification()
                 {
-                    FkUser = userLiking,
+                    FkUser = post.FkUser,
+                    FkUserWhoNotifiedNavigation = userCommenting,
                     FkPost = post,
                     DatetimeOfNot = DateTime.UtcNow,
                     PostCommentId = commentObj.PostCommentId
@@ -355,7 +357,7 @@ namespace Visit.Service.BusinessLogic
             }
             catch (Exception e)
             {
-                _logger.LogError($"{userLiking.Id} could not comment on postId {postId}: {e}");
+                _logger.LogError($"{userCommenting.Id} could not comment on postId {postId}: {e}");
                 return false;
             }
         }

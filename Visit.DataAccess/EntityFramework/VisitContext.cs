@@ -531,6 +531,9 @@ namespace Visit.DataAccess.EntityFramework
                 entity.HasIndex(e => e.FkUserId)
                     .HasName("FK_UserId");
 
+                entity.HasIndex(e => e.FkUserWhoNotified)
+                    .HasName("FK_UserWhoNotified");
+
                 entity.HasIndex(e => e.LikeId)
                     .HasName("LikeId");
 
@@ -552,6 +555,13 @@ namespace Visit.DataAccess.EntityFramework
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_general_ci");
 
+                entity.Property(e => e.FkUserWhoNotified)
+                    .IsRequired()
+                    .HasColumnName("FK_UserWhoNotified")
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
+
                 entity.Property(e => e.LikeId).HasColumnType("int(11)");
 
                 entity.Property(e => e.PostCommentId).HasColumnType("int(11)");
@@ -563,10 +573,16 @@ namespace Visit.DataAccess.EntityFramework
                     .HasConstraintName("UserNotification_ibfk_4");
 
                 entity.HasOne(d => d.FkUser)
-                    .WithMany(p => p.UserNotification)
+                    .WithMany(p => p.UserNotificationFkUser)
                     .HasForeignKey(d => d.FkUserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("UserNotification_ibfk_3");
+
+                entity.HasOne(d => d.FkUserWhoNotifiedNavigation)
+                    .WithMany(p => p.UserNotificationFkUserWhoNotifiedNavigation)
+                    .HasForeignKey(d => d.FkUserWhoNotified)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("UserNotification_ibfk_5");
 
                 entity.HasOne(d => d.Like)
                     .WithMany(p => p.UserNotification)

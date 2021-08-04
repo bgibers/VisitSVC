@@ -97,7 +97,7 @@ namespace Visit.Service.BusinessLogic
             
             var userNotifications = await _visitContext.UserNotification.Where(u => u.FkUserId == user.Uid)
                 .OrderByDynamic("DatetimeOfNot", "OrderByDescending")
-                .Include(u => u.FkUser)
+                .Include(u => u.FkUserWhoNotifiedNavigation)
                 .Include(u => u.PostComment)
                 .ToListAsync();
 
@@ -107,7 +107,7 @@ namespace Visit.Service.BusinessLogic
                 {
                     FkPostId = notification.FkPostId,
                     Comment = notification.PostComment == null ? "" : notification.PostComment.CommentText,
-                    UserWhoPerformedAction = _mapper.Map<User, SlimUserResponse>(notification.FkUser),
+                    UserWhoPerformedAction = _mapper.Map<User, SlimUserResponse>(notification.FkUserWhoNotifiedNavigation),
                     Date = notification.DatetimeOfNot
                 });
             }

@@ -10,9 +10,11 @@ namespace Visit.DataAccess.Models
         public DateTime DatetimeOfNot { get; set; }
         public int? PostCommentId { get; set; }
         public int? LikeId { get; set; }
+        public string FkUserWhoNotified { get; set; }
 
         public virtual Post FkPost { get; set; }
         public virtual User FkUser { get; set; }
+        public virtual User FkUserWhoNotifiedNavigation { get; set; }
         public virtual Like Like { get; set; }
         public virtual PostComment PostComment { get; set; }
     }
