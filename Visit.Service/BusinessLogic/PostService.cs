@@ -261,7 +261,7 @@ namespace Visit.Service.BusinessLogic
                     return false;
                 }
                 
-                await _visitContext.Like.AddAsync(new Like
+                var like = await _visitContext.Like.AddAsync(new Like
                 {
                     FkPost = post,
                     FkUser = userLiking
@@ -286,7 +286,14 @@ namespace Visit.Service.BusinessLogic
 
                 await _visitContext.UserNotification.AddAsync(new UserNotification()
                 {
+                    FkUser = userLiking,
+                    FkPost = post,
+                    DatetimeOfNot = DateTime.UtcNow,
+                    Like = like.Entity
                 });
+                
+                await _visitContext.SaveChangesAsync(); 
+
                 
                 return true;
             }
@@ -307,7 +314,7 @@ namespace Visit.Service.BusinessLogic
                 var post = await _visitContext.Post.Include(p => p.FkUser)
                     .FirstOrDefaultAsync(p => p.PostId == int.Parse(postId));
 
-                await _visitContext.PostComment.AddAsync(new PostComment
+                var commentObj = await _visitContext.PostComment.AddAsync(new PostComment
                 {
                     FkPost = post,
                     FkUserIdOfCommentingNavigation = userLiking,
@@ -331,6 +338,16 @@ namespace Visit.Service.BusinessLogic
                 };
 
                 await _firebaseService.SendPushNotification(message);
+
+                await _visitContext.UserNotification.AddAsync(new UserNotification()
+                {
+                    FkUser = userLiking,
+                    FkPost = post,
+                    DatetimeOfNot = DateTime.UtcNow,
+                    PostComment = commentObj.Entity
+                });
+                
+                await _visitContext.SaveChangesAsync(); 
 
                 return true;
             }
@@ -401,12 +418,6 @@ namespace Visit.Service.BusinessLogic
                 _logger.LogError($"Could not get comments for post {postId}");
                 return new List<CommentForPost>();
             }
-        }
-
-        public async Task<UserRecentNotifications> GetUserRecentNotifications(string claim)
-        {
-            var user = await _firebaseService.GetUserFromToken(claim);
-            throw new NotImplementedException();
         }
     }
 }

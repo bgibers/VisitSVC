@@ -5,7 +5,10 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Visit.DataAccess.EntityFramework;
+using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.Interfaces;
+using Visit.Service.Models;
+using Visit.Service.Models.Extenstions;
 using Visit.Service.Models.Responses;
 
 namespace Visit.Service.BusinessLogic
@@ -85,6 +88,31 @@ namespace Visit.Service.BusinessLogic
             var user = await _visitContext.User.SingleAsync(u => u.Id == id);
             
             return _mapper.Map<SlimUserResponse>(user);
+        }
+        
+        public async Task<List<NotificationsForUser>> GetUserRecentNotifications(string claim)
+        {
+            var user = await _firebaseService.GetUserFromToken(claim);
+            var notificationsToReturn = new List<NotificationsForUser>();
+            
+            var userNotifications = await _visitContext.UserNotification.Where(u => u.FkUserId == user.Uid)
+                .OrderByDynamic("DatetimeOfNot", "OrderByDescending")
+                .Include(u => u.FkUser)
+                .Include(u => u.PostComment)
+                .ToListAsync();
+
+            foreach (var notification in userNotifications.Take(25))
+            {
+                notificationsToReturn.Add(new NotificationsForUser()
+                {
+                    FkPostId = notification.FkPostId,
+                    Comment = notification.PostComment == null ? "" : notification.PostComment.CommentText,
+                    UserWhoPerformedAction = _mapper.Map<User, SlimUserResponse>(notification.FkUser),
+                    Date = notification.DatetimeOfNot
+                });
+            }
+
+            return notificationsToReturn;
         }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.Net.Http.Headers;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
 using Visit.Service.BusinessLogic.Interfaces;
+using Visit.Service.Models;
 using Visit.Service.Models.Responses;
 
 namespace Visit.Service.ApiControllers
@@ -74,6 +75,23 @@ namespace Visit.Service.ApiControllers
         public List<SlimUserResponse> Search(string query)
         {
             return _userBusinessLogic.FindUserBySearchCriteria(query);
+        }
+
+        /// <summary>
+        /// Return the 25 latest notifications for a user
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        public async Task<ActionResult<List<NotificationsForUser>>> GetUserRecentNotifications()
+        {
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _userBusinessLogic.GetUserRecentNotifications(headerValue.Parameter);
+            }
+            
+            return Unauthorized();
         }
     }
 }
