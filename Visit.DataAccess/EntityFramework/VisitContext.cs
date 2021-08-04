@@ -571,13 +571,11 @@ namespace Visit.DataAccess.EntityFramework
                 entity.HasOne(d => d.Like)
                     .WithMany(p => p.UserNotification)
                     .HasForeignKey(d => d.LikeId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("UserNotification_ibfk_2");
 
                 entity.HasOne(d => d.PostComment)
                     .WithMany(p => p.UserNotification)
                     .HasForeignKey(d => d.PostCommentId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("UserNotification_ibfk_1");
             });
 
