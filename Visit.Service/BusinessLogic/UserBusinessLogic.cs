@@ -92,6 +92,7 @@ namespace Visit.Service.BusinessLogic
         
         public async Task<List<NotificationsForUser>> GetUserRecentNotifications(string claim)
         {
+            _logger.LogInformation($"user token: {claim}");
             var user = await _firebaseService.GetUserFromToken(claim);
             var notificationsToReturn = new List<NotificationsForUser>();
             
