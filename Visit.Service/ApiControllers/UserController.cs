@@ -80,8 +80,9 @@ namespace Visit.Service.ApiControllers
         /// <summary>
         /// Return the 25 latest notifications for a user
         /// </summary>
-        /// <param name="claim"></param>
         /// <returns></returns>
+        [HttpGet("notifications")]
+        [Authorize]
         public async Task<ActionResult<List<NotificationsForUser>>> GetUserRecentNotifications()
         {
             var authorization = Request.Headers[HeaderNames.Authorization];
