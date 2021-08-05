@@ -270,6 +270,17 @@ namespace Visit.Service.BusinessLogic
                 
                 await _visitContext.SaveChangesAsync(); 
                 
+                await _visitContext.UserNotification.AddAsync(new UserNotification()
+                {
+                    FkUser = post.FkUser,
+                    FkUserWhoNotifiedNavigation = userLiking,
+                    FkPost = post,
+                    DatetimeOfNot = DateTime.UtcNow,
+                    LikeId = like.LikeId
+                });
+                
+                await _visitContext.SaveChangesAsync(); 
+                
                 var message = new Message()
                 {
                     Token = post.FkUser.FcmToken,
@@ -284,19 +295,6 @@ namespace Visit.Service.BusinessLogic
                 };
 
                 await _firebaseService.SendPushNotification(message);
-
-                await _visitContext.UserNotification.AddAsync(new UserNotification()
-                {
-                    FkUser = post.FkUser,
-                    FkUserWhoNotifiedNavigation = userLiking,
-                    FkPost = post,
-                    DatetimeOfNot = DateTime.UtcNow,
-                    LikeId = like.LikeId
-                });
-                
-                await _visitContext.SaveChangesAsync(); 
-
-                
                 return true;
             }
             catch (Exception e)
@@ -327,6 +325,17 @@ namespace Visit.Service.BusinessLogic
                 
                 await _visitContext.SaveChangesAsync();
                 
+                await _visitContext.UserNotification.AddAsync(new UserNotification()
+                {
+                    FkUser = post.FkUser,
+                    FkUserWhoNotifiedNavigation = userCommenting,
+                    FkPost = post,
+                    DatetimeOfNot = DateTime.UtcNow,
+                    PostCommentId = commentObj.PostCommentId
+                });
+                
+                await _visitContext.SaveChangesAsync(); 
+                
                 var message = new Message()
                 {
                     Token = post.FkUser.FcmToken,
@@ -341,18 +350,7 @@ namespace Visit.Service.BusinessLogic
                 };
 
                 await _firebaseService.SendPushNotification(message);
-
-                await _visitContext.UserNotification.AddAsync(new UserNotification()
-                {
-                    FkUser = post.FkUser,
-                    FkUserWhoNotifiedNavigation = userCommenting,
-                    FkPost = post,
-                    DatetimeOfNot = DateTime.UtcNow,
-                    PostCommentId = commentObj.PostCommentId
-                });
                 
-                await _visitContext.SaveChangesAsync(); 
-
                 return true;
             }
             catch (Exception e)
