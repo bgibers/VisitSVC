@@ -253,10 +253,10 @@ namespace Visit.Service.BusinessLogic
 
             try
             {
-                var post = await _visitContext.Post.Include(p => p.FkUser)
-                    .FirstOrDefaultAsync(p => p.PostId == int.Parse(postId));
+                var post = (_visitContext.Post.Where(p => p.PostId == int.Parse(postId))
+                    .Include(p => p.FkUser)).ToList().SingleOrDefault();
                 
-                if (_visitContext.Like.Any(l => l.FkPostId == int.Parse(postId) && l.FkUserId == userLiking.Id))
+                if (_visitContext.Like.Any(l => l.FkPostId == int.Parse(postId) && l.FkUserId == userLiking.Id) || post == null)
                 {
                     return false;
                 }
@@ -267,34 +267,37 @@ namespace Visit.Service.BusinessLogic
                     FkUser = userLiking
                 };
                 await _visitContext.Like.AddAsync(like);
-                
-                await _visitContext.SaveChangesAsync(); 
-                
-                await _visitContext.UserNotification.AddAsync(new UserNotification()
-                {
-                    FkUser = post.FkUser,
-                    FkUserWhoNotifiedNavigation = userLiking,
-                    FkPost = post,
-                    DatetimeOfNot = DateTime.UtcNow,
-                    LikeId = like.LikeId
-                });
-                
-                await _visitContext.SaveChangesAsync(); 
-                
-                var message = new Message()
-                {
-                    Token = post.FkUser.FcmToken,
-                    Notification = new Notification()
-                    {
-                        Body = $"{userLiking.Firstname} {userLiking.Lastname} liked your post."
-                    },
-                    Data = new Dictionary<string, string>()
-                    {
-                        {"postId", postId}
-                    }
-                };
+                await _visitContext.SaveChangesAsync();
 
-                await _firebaseService.SendPushNotification(message);
+                if (post.FkUser.Id != userLikingId)
+                {
+                    await _visitContext.UserNotification.AddAsync(new UserNotification()
+                    {
+                        FkUser = post.FkUser,
+                        FkUserWhoNotifiedNavigation = userLiking,
+                        FkPost = post,
+                        DatetimeOfNot = DateTime.UtcNow,
+                        LikeId = like.LikeId
+                    });
+                
+                    await _visitContext.SaveChangesAsync(); 
+                
+                    var message = new Message()
+                    {
+                        Token = post.FkUser.FcmToken,
+                        Notification = new Notification()
+                        {
+                            Body = $"{userLiking.Firstname} {userLiking.Lastname} liked your post."
+                        },
+                        Data = new Dictionary<string, string>()
+                        {
+                            {"postId", postId}
+                        }
+                    };
+
+                    await _firebaseService.SendPushNotification(message);
+                }
+
                 return true;
             }
             catch (Exception e)
@@ -311,9 +314,11 @@ namespace Visit.Service.BusinessLogic
 
             try
             {
-                var post = await _visitContext.Post.Include(p => p.FkUser)
-                    .FirstOrDefaultAsync(p => p.PostId == int.Parse(postId));
+                var post = (_visitContext.Post.Where(p => p.PostId == int.Parse(postId))
+                    .Include(p => p.FkUser)).ToList().SingleOrDefault();
 
+                if (post == null) return false;
+                
                 var commentObj = new PostComment
                 {
                     FkPost = post,
@@ -322,34 +327,26 @@ namespace Visit.Service.BusinessLogic
                     CommentText = comment
                 };
                 await _visitContext.PostComment.AddAsync(commentObj);
-                
                 await _visitContext.SaveChangesAsync();
-                
-                await _visitContext.UserNotification.AddAsync(new UserNotification()
-                {
-                    FkUser = post.FkUser,
-                    FkUserWhoNotifiedNavigation = userCommenting,
-                    FkPost = post,
-                    DatetimeOfNot = DateTime.UtcNow,
-                    PostCommentId = commentObj.PostCommentId
-                });
-                
-                await _visitContext.SaveChangesAsync(); 
-                
-                var message = new Message()
-                {
-                    Token = post.FkUser.FcmToken,
-                    Notification = new Notification()
-                    {
-                        Body = $"{userCommenting.Firstname} {userCommenting.Lastname} commented {comment}"
-                    },
-                    Data = new Dictionary<string, string>()
-                    {
-                        {"postId", postId}
-                    }
-                };
 
-                await _firebaseService.SendPushNotification(message);
+                if (post.FkUser.Id != userCommentingId)
+                {
+                    await SendUserNotification(post.FkUser, userCommenting, post, commentObj);
+                }
+                else
+                {
+                    var allUsersWhoCommented = (_visitContext.PostComment.Where(p => p.FkPostId == int.Parse(postId))
+                        .Include(p => p.FkUserIdOfCommentingNavigation))
+                        .Select(p => p.FkUserIdOfCommentingNavigation);
+
+                    if (!allUsersWhoCommented.Any()) return true;
+                    
+                    foreach (var user in allUsersWhoCommented)
+                    {
+                        if (user.Id == userCommentingId) continue;
+                        await SendUserNotification(user, userCommenting, post, commentObj);
+                    }
+                }
                 
                 return true;
             }
@@ -358,6 +355,38 @@ namespace Visit.Service.BusinessLogic
                 _logger.LogError($"{userCommenting.Id} could not comment on postId {postId}: {e}");
                 return false;
             }
+        }
+
+        private async Task<bool> SendUserNotification(User userWhoIsBeingNotified, User userNotifying, Post post,
+            PostComment commentObj)
+        {
+            await _visitContext.UserNotification.AddAsync(new UserNotification()
+            {
+                FkUser = userWhoIsBeingNotified,
+                FkUserWhoNotifiedNavigation = userNotifying,
+                FkPost = post,
+                DatetimeOfNot = DateTime.UtcNow,
+                PostCommentId = commentObj.PostCommentId
+            });
+                
+            await _visitContext.SaveChangesAsync(); 
+                
+            var message = new Message()
+            {
+                Token = post.FkUser.FcmToken,
+                Notification = new Notification()
+                {
+                    Body = $"{userNotifying.Firstname} {userNotifying.Lastname} commented {commentObj.CommentText}"
+                },
+                Data = new Dictionary<string, string>()
+                {
+                    {"postId", post.PostId.ToString()}
+                }
+            };
+
+            await _firebaseService.SendPushNotification(message);
+
+            return true;
         }
 
         public List<LikeForPost> GetLikesForPost(string postId)
