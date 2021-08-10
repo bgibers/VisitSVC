@@ -2,7 +2,7 @@
 
 namespace Visit.DataAccess.Models
 {
-    public class UserMessage
+    public partial class UserMessage
     {
         public int UserMessageId { get; set; }
         public string FkSenderUserId { get; set; }

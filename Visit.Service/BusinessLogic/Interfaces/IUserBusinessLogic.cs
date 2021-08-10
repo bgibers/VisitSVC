@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Visit.Service.Models;
 using Visit.Service.Models.Responses;
 
 namespace Visit.Service.BusinessLogic.Interfaces
@@ -18,6 +19,13 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// <param name="id"></param>
         /// <returns></returns>
         Task<SlimUserResponse> GetSlimUser(string id);
+        
+        /// <summary>
+        /// Return the 25 latest notifications for a user
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <returns></returns>
+        Task<List<NotificationsForUser>> GetUserRecentNotifications(string claim);
         
         /// <summary>
         /// For searching 

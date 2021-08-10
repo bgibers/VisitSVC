@@ -21,6 +21,20 @@ namespace Visit.Service.ApiControllers
             _postService = postService;
         }
         
+        [HttpGet("single/{id}")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<PostApi>> GetPostById(int id)
+        { 
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _postService.GetPostById(headerValue.Parameter, id);
+            }
+
+            return Unauthorized();
+        }
+        
         /// <summary>
         /// Get posts by page. Each page is 50 results
         /// </summary>

@@ -20,6 +20,14 @@ namespace Visit.Service.BusinessLogic.Interfaces
             string userId = "");
 
         /// <summary>
+        /// Get a post by its id
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        Task<PostApi> GetPostById(string claim, int postId);
+
+        /// <summary>
         /// Create a new post
         /// </summary>
         /// <param name="user"></param>

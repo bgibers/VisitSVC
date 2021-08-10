@@ -1,24 +1,20 @@
-﻿﻿using Microsoft.EntityFrameworkCore;
- using Microsoft.Extensions.Configuration;
- using Visit.DataAccess.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Visit.DataAccess.Models;
 
- namespace Visit.DataAccess.EntityFramework
+namespace Visit.DataAccess.EntityFramework
 {
-    public class VisitContext : DbContext
+    public partial class VisitContext : DbContext
     {
-        private readonly IConfiguration _configuration;
-        
-        public VisitContext(IConfiguration configuration)
+        public VisitContext()
         {
-            _configuration = configuration;
         }
 
-        public VisitContext(DbContextOptions<VisitContext> options, IConfiguration configuration)
+        public VisitContext(DbContextOptions<VisitContext> options)
             : base(options)
         {
-            _configuration = configuration;
         }
 
+        public virtual DbSet<EfmigrationsHistory> EfmigrationsHistory { get; set; }
         public virtual DbSet<Like> Like { get; set; }
         public virtual DbSet<Location> Location { get; set; }
         public virtual DbSet<LocationTag> LocationTag { get; set; }
@@ -32,17 +28,38 @@
         public virtual DbSet<UserFollowing> UserFollowing { get; set; }
         public virtual DbSet<UserLocation> UserLocation { get; set; }
         public virtual DbSet<UserMessage> UserMessage { get; set; }
+        public virtual DbSet<UserNotification> UserNotification { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseMySql(_configuration.GetConnectionString("MySql"), x => x.ServerVersion("8.0.17-mysql"));
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+                optionsBuilder.UseMySql("server=localhost;port=1521;user=root;password=clemson17;database=VisitV2", x => x.ServerVersion("8.0.17-mysql"));
             }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<EfmigrationsHistory>(entity =>
+            {
+                entity.HasKey(e => e.MigrationId)
+                    .HasName("PRIMARY");
+
+                entity.ToTable("__EFMigrationsHistory");
+
+                entity.Property(e => e.MigrationId)
+                    .HasColumnType("varchar(95)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.ProductVersion)
+                    .IsRequired()
+                    .HasColumnType("varchar(32)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
+            });
+
             modelBuilder.Entity<Like>(entity =>
             {
                 entity.HasIndex(e => e.FkPostId)
@@ -62,7 +79,9 @@
                     .HasColumnName("FK_UserId")
                     .HasColumnType("varchar(255)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.TimeOfLike).HasColumnType("datetime");
 
                 entity.HasOne(d => d.FkPost)
                     .WithMany(p => p.Like)
@@ -84,22 +103,22 @@
                 entity.Property(e => e.LocationCode)
                     .HasColumnType("varchar(8)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.LocationCountry)
                     .HasColumnType("varchar(500)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.LocationName)
                     .HasColumnType("varchar(500)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.LocationType)
                     .HasColumnType("varchar(500)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
             });
 
             modelBuilder.Entity<LocationTag>(entity =>
@@ -145,10 +164,6 @@
 
                 entity.Property(e => e.PostId).HasColumnType("int(11)");
 
-                entity.Property(e => e.PostTime)
-                    .HasColumnName("PostTime")
-                    .HasColumnType("datetime");
-                
                 entity.Property(e => e.FkPostTypeId)
                     .HasColumnName("FK_Post_TypeId")
                     .HasColumnType("int(11)");
@@ -157,17 +172,19 @@
                     .HasColumnName("FK_UserId")
                     .HasColumnType("varchar(255)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.PostCaption)
                     .HasColumnType("varchar(5000)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.PostContentLink)
                     .HasColumnType("varchar(500)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.PostTime).HasColumnType("datetime");
 
                 entity.Property(e => e.ReviewRating).HasColumnType("int(11)");
 
@@ -195,7 +212,7 @@
                 entity.Property(e => e.CommentText)
                     .HasColumnType("varchar(500)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.FkPostId)
                     .HasColumnName("FK_PostId")
@@ -205,7 +222,7 @@
                     .HasColumnName("FK_UserId_Of_commenting")
                     .HasColumnType("varchar(255)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.HasOne(d => d.FkPost)
                     .WithMany(p => p.PostComment)
@@ -258,7 +275,7 @@
                 entity.Property(e => e.Type)
                     .HasColumnType("varchar(350)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
             });
 
             modelBuilder.Entity<PostUserLocation>(entity =>
@@ -302,7 +319,7 @@
                     .HasColumnName("Tag")
                     .HasColumnType("varchar(150)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
             });
 
             modelBuilder.Entity<User>(entity =>
@@ -313,37 +330,41 @@
                 entity.HasIndex(e => e.FkResidenceLocationId)
                     .HasName("FK_ResidenceLocationId");
 
+                entity.Property(e => e.Id)
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
+
                 entity.Property(e => e.Avi)
                     .HasColumnType("varchar(150)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.BirthLocation)
+                    .HasColumnType("varchar(150)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.Education)
+                    .HasColumnType("varchar(150)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.Email)
+                    .HasColumnType("longtext")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.FcmToken)
+                    .HasColumnType("longtext")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.Firstname)
                     .HasColumnType("varchar(150)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
-                entity.Property(e => e.Title)
-                    .HasColumnType("varchar(150)")
-                    .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
-                
-                entity.Property(e => e.Education)
-                    .HasColumnType("varchar(150)")
-                    .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
-                
-                entity.Property(e => e.BirthLocation)
-                    .HasColumnType("varchar(150)")
-                    .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
-                
-                entity.Property(e => e.ResidenceLocation)
-                    .HasColumnType("varchar(150)")
-                    .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
-
-                
                 entity.Property(e => e.FkBirthLocationId)
                     .HasColumnName("FK_BirthLocationId")
                     .HasColumnType("int(11)");
@@ -355,7 +376,17 @@
                 entity.Property(e => e.Lastname)
                     .HasColumnType("varchar(150)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.ResidenceLocation)
+                    .HasColumnType("varchar(150)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.Title)
+                    .HasColumnType("varchar(150)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.HasOne(d => d.FkBirthLocation)
                     .WithMany(p => p.UserFkBirthLocation)
@@ -382,13 +413,13 @@
                     .HasColumnName("FK_Follow_UserId")
                     .HasColumnType("varchar(255)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.FkMainUserId)
                     .HasColumnName("FK_Main_UserId")
                     .HasColumnType("varchar(255)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.HasOne(d => d.FkFollowUser)
                     .WithMany(p => p.UserFollowingFkFollowUser)
@@ -418,7 +449,7 @@
                 entity.Property(e => e.City)
                     .HasColumnType("varchar(255)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.FkLocationId)
                     .HasColumnName("FK_LocationId")
@@ -428,17 +459,17 @@
                     .HasColumnName("FK_UserId")
                     .HasColumnType("varchar(255)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.Status)
                     .HasColumnType("varchar(500)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.Venue)
                     .HasColumnType("varchar(500)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.HasOne(d => d.FkLocation)
                     .WithMany(p => p.UserLocation)
@@ -465,18 +496,18 @@
                     .HasColumnName("FK_Reciever_UserId")
                     .HasColumnType("varchar(255)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.FkSenderUserId)
                     .HasColumnName("FK_Sender_UserId")
                     .HasColumnType("varchar(255)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.Property(e => e.MessageContent)
                     .HasColumnType("varchar(5000)")
                     .HasCharSet("utf8mb4")
-                    .HasCollation("utf8mb4_0900_ai_ci");
+                    .HasCollation("utf8mb4_general_ci");
 
                 entity.HasOne(d => d.FkRecieverUser)
                     .WithMany(p => p.UserMessageFkRecieverUser)
@@ -489,12 +520,84 @@
                     .HasConstraintName("FK_UserMessage_User");
             });
 
+            modelBuilder.Entity<UserNotification>(entity =>
+            {
+                entity.HasKey(e => e.NotificationId)
+                    .HasName("PRIMARY");
+
+                entity.HasIndex(e => e.FkPostId)
+                    .HasName("FK_PostId");
+
+                entity.HasIndex(e => e.FkUserId)
+                    .HasName("FK_UserId");
+
+                entity.HasIndex(e => e.FkUserWhoNotified)
+                    .HasName("FK_UserWhoNotified");
+
+                entity.HasIndex(e => e.LikeId)
+                    .HasName("LikeId");
+
+                entity.HasIndex(e => e.PostCommentId)
+                    .HasName("PostCommentId");
+
+                entity.Property(e => e.NotificationId).HasColumnType("int(11)");
+
+                entity.Property(e => e.DatetimeOfNot).HasColumnType("datetime");
+
+                entity.Property(e => e.FkPostId)
+                    .HasColumnName("FK_PostId")
+                    .HasColumnType("int(11)");
+
+                entity.Property(e => e.FkUserId)
+                    .IsRequired()
+                    .HasColumnName("FK_UserId")
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.FkUserWhoNotified)
+                    .IsRequired()
+                    .HasColumnName("FK_UserWhoNotified")
+                    .HasColumnType("varchar(255)")
+                    .HasCharSet("utf8mb4")
+                    .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.LikeId).HasColumnType("int(11)");
+
+                entity.Property(e => e.PostCommentId).HasColumnType("int(11)");
+
+                entity.HasOne(d => d.FkPost)
+                    .WithMany(p => p.UserNotification)
+                    .HasForeignKey(d => d.FkPostId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("UserNotification_ibfk_4");
+
+                entity.HasOne(d => d.FkUser)
+                    .WithMany(p => p.UserNotificationFkUser)
+                    .HasForeignKey(d => d.FkUserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("UserNotification_ibfk_3");
+
+                entity.HasOne(d => d.FkUserWhoNotifiedNavigation)
+                    .WithMany(p => p.UserNotificationFkUserWhoNotifiedNavigation)
+                    .HasForeignKey(d => d.FkUserWhoNotified)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("UserNotification_ibfk_5");
+
+                entity.HasOne(d => d.Like)
+                    .WithMany(p => p.UserNotification)
+                    .HasForeignKey(d => d.LikeId)
+                    .HasConstraintName("UserNotification_ibfk_2");
+
+                entity.HasOne(d => d.PostComment)
+                    .WithMany(p => p.UserNotification)
+                    .HasForeignKey(d => d.PostCommentId)
+                    .HasConstraintName("UserNotification_ibfk_1");
+            });
+
             OnModelCreatingPartial(modelBuilder);
         }
 
-        private void OnModelCreatingPartial(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-        }
+        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }
 }

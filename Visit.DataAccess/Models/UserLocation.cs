@@ -2,7 +2,7 @@
 
 namespace Visit.DataAccess.Models
 {
-    public class UserLocation
+    public partial class UserLocation
     {
         public UserLocation()
         {

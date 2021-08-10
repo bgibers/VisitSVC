@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Visit.DataAccess.Models
 {
-    public class Post
+    public partial class Post
     {
         public Post()
         {
@@ -11,6 +11,7 @@ namespace Visit.DataAccess.Models
             PostComment = new HashSet<PostComment>();
             PostTag = new HashSet<PostTag>();
             PostUserLocation = new HashSet<PostUserLocation>();
+            UserNotification = new HashSet<UserNotification>();
         }
 
         public int PostId { get; set; }
@@ -18,9 +19,7 @@ namespace Visit.DataAccess.Models
         public string FkUserId { get; set; }
         public string PostContentLink { get; set; }
         public string PostCaption { get; set; }
-        
         public DateTime? PostTime { get; set; }
-
         public int? ReviewRating { get; set; }
 
         public virtual PostType FkPostType { get; set; }
@@ -29,5 +28,6 @@ namespace Visit.DataAccess.Models
         public virtual ICollection<PostComment> PostComment { get; set; }
         public virtual ICollection<PostTag> PostTag { get; set; }
         public virtual ICollection<PostUserLocation> PostUserLocation { get; set; }
+        public virtual ICollection<UserNotification> UserNotification { get; set; }
     }
 }

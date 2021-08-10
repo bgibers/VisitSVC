@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Visit.DataAccess.EntityFramework;
 using Visit.DataAccess.Models;
+using Visit.Service.ApiControllers.Models;
 using Visit.Service.BusinessLogic.BlobStorage;
 using Visit.Service.BusinessLogic.Interfaces;
 using Visit.Service.Models;
@@ -139,6 +140,42 @@ namespace Visit.Service.BusinessLogic
                 TotalPages = postPaginatedList.TotalPages
             };
         }
+
+        public async Task<PostApi> GetPostById(string claim, int postId)
+        {
+            var user = await _firebaseService.GetUserFromToken(claim);
+
+            var post = await _visitContext.Post.Where(p => p.PostId == postId)
+                .Include(p => p.FkUser)
+                .Include(p => p.FkPostType)
+                .Include(p => p.PostComment)
+                .Include(p => p.Like)
+                .Include(p => p.PostUserLocation)
+                .ThenInclude(p => p.FkLocation.FkLocation)
+                .FirstOrDefaultAsync();
+            
+            var commentCount = post.PostComment.Count;
+            var likeCount = post.Like.Count;
+
+            bool likedByCurrentUser = await _visitContext.Like.AnyAsync(l => l.FkPostId == post.PostId && l.FkUserId == user.Uid);
+            
+            return new PostApi
+            {
+                PostId = post.PostId,
+                FkPostTypeId = post.FkPostTypeId,
+                FkUserId = post.FkUserId,
+                PostContentLink = post.PostContentLink ?? "",
+                PostCaption = post.PostCaption,
+                PostTime = post.PostTime,
+                ReviewRating = post.ReviewRating,
+                FkPostType = post.FkPostType,
+                FkUser = _mapper.Map<UserResponse>(post.FkUser),
+                LikedByCurrentUser = likedByCurrentUser,
+                Location = post.PostUserLocation.SingleOrDefault()?.FkLocation.FkLocation,
+                CommentCount = commentCount,
+                LikeCount = likeCount
+            };
+        } 
         
         public async Task<NewPostResponse> CreatePost(string claim, CreatePostRequest postRequest)
         {
@@ -216,33 +253,51 @@ namespace Visit.Service.BusinessLogic
 
             try
             {
-                var post = await _visitContext.Post.Include(p => p.FkUser)
-                    .FirstOrDefaultAsync(p => p.PostId == int.Parse(postId));
+                var post = (_visitContext.Post.Where(p => p.PostId == int.Parse(postId))
+                    .Include(p => p.FkUser)).ToList().SingleOrDefault();
                 
-                if (_visitContext.Like.Any(l => l.FkPostId == int.Parse(postId) && l.FkUserId == userLiking.Id))
+                if (_visitContext.Like.Any(l => l.FkPostId == int.Parse(postId) && l.FkUserId == userLiking.Id) || post == null)
                 {
                     return false;
                 }
-                
-                await _visitContext.Like.AddAsync(new Like
+
+                var like = new Like
                 {
                     FkPost = post,
                     FkUser = userLiking
-                });
-                
-                await _visitContext.SaveChangesAsync(); 
-                
-                var message = new Message()
-                {
-                    Token = post.FkUser.FcmToken,
-                    Notification = new Notification()
-                    {
-                        Body = $"{userLiking.Firstname} {userLiking.Lastname} liked your post."
-                    }
                 };
+                await _visitContext.Like.AddAsync(like);
+                await _visitContext.SaveChangesAsync();
 
-                await _firebaseService.SendPushNotification(message);
+                if (post.FkUser.Id != userLikingId)
+                {
+                    await _visitContext.UserNotification.AddAsync(new UserNotification()
+                    {
+                        FkUser = post.FkUser,
+                        FkUserWhoNotifiedNavigation = userLiking,
+                        FkPost = post,
+                        DatetimeOfNot = DateTime.UtcNow,
+                        LikeId = like.LikeId
+                    });
                 
+                    await _visitContext.SaveChangesAsync(); 
+                
+                    var message = new Message()
+                    {
+                        Token = post.FkUser.FcmToken,
+                        Notification = new Notification()
+                        {
+                            Body = $"{userLiking.Firstname} {userLiking.Lastname} liked your post."
+                        },
+                        Data = new Dictionary<string, string>()
+                        {
+                            {"postId", postId}
+                        }
+                    };
+
+                    await _firebaseService.SendPushNotification(message);
+                }
+
                 return true;
             }
             catch (Exception e)
@@ -254,42 +309,84 @@ namespace Visit.Service.BusinessLogic
         
         public async Task<bool> CommentOnPost(string claim, string postId, string comment)
         {
-            var userLikingId = (await _firebaseService.GetUserFromToken(claim)).Uid;
-            var userLiking = await _visitContext.User.FindAsync(userLikingId);
+            var userCommentingId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+            var userCommenting = await _visitContext.User.FindAsync(userCommentingId);
 
             try
             {
-                var post = await _visitContext.Post.Include(p => p.FkUser)
-                    .FirstOrDefaultAsync(p => p.PostId == int.Parse(postId));
+                var post = (_visitContext.Post.Where(p => p.PostId == int.Parse(postId))
+                    .Include(p => p.FkUser)).ToList().SingleOrDefault();
 
-                await _visitContext.PostComment.AddAsync(new PostComment
+                if (post == null) return false;
+                
+                var commentObj = new PostComment
                 {
                     FkPost = post,
-                    FkUserIdOfCommentingNavigation = userLiking,
+                    FkUserIdOfCommentingNavigation = userCommenting,
                     DatetimeOfComments = DateTime.UtcNow,
                     CommentText = comment
-                });
-                
-                await _visitContext.SaveChangesAsync();
-                
-                var message = new Message()
-                {
-                    Token = post.FkUser.FcmToken,
-                    Notification = new Notification()
-                    {
-                        Body = $"{userLiking.Firstname} {userLiking.Lastname} commented {comment}"
-                    }
                 };
+                await _visitContext.PostComment.AddAsync(commentObj);
+                await _visitContext.SaveChangesAsync();
 
-                await _firebaseService.SendPushNotification(message);
+                if (post.FkUser.Id != userCommentingId)
+                {
+                    await SendUserNotification(post.FkUser, userCommenting, post, commentObj);
+                }
+                else
+                {
+                    var allUsersWhoCommented = (_visitContext.PostComment.Where(p => p.FkPostId == int.Parse(postId))
+                        .Include(p => p.FkUserIdOfCommentingNavigation))
+                        .Select(p => p.FkUserIdOfCommentingNavigation);
 
+                    if (!allUsersWhoCommented.Any()) return true;
+                    
+                    foreach (var user in allUsersWhoCommented)
+                    {
+                        if (user.Id == userCommentingId) continue;
+                        await SendUserNotification(user, userCommenting, post, commentObj);
+                    }
+                }
+                
                 return true;
             }
             catch (Exception e)
             {
-                _logger.LogError($"{userLiking.Id} could not comment on postId {postId}: {e}");
+                _logger.LogError($"{userCommenting.Id} could not comment on postId {postId}: {e}");
                 return false;
             }
+        }
+
+        private async Task<bool> SendUserNotification(User userWhoIsBeingNotified, User userNotifying, Post post,
+            PostComment commentObj)
+        {
+            await _visitContext.UserNotification.AddAsync(new UserNotification()
+            {
+                FkUser = userWhoIsBeingNotified,
+                FkUserWhoNotifiedNavigation = userNotifying,
+                FkPost = post,
+                DatetimeOfNot = DateTime.UtcNow,
+                PostCommentId = commentObj.PostCommentId
+            });
+                
+            await _visitContext.SaveChangesAsync(); 
+                
+            var message = new Message()
+            {
+                Token = post.FkUser.FcmToken,
+                Notification = new Notification()
+                {
+                    Body = $"{userNotifying.Firstname} {userNotifying.Lastname} commented {commentObj.CommentText}"
+                },
+                Data = new Dictionary<string, string>()
+                {
+                    {"postId", post.PostId.ToString()}
+                }
+            };
+
+            await _firebaseService.SendPushNotification(message);
+
+            return true;
         }
 
         public List<LikeForPost> GetLikesForPost(string postId)
