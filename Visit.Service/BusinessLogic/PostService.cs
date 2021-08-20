@@ -210,7 +210,7 @@ namespace Visit.Service.BusinessLogic
                 {
                     userLocation = new UserLocation
                     {
-                        Status = "toVisit",
+                        Status = "visited",
                         Venue = "",
                         FkLocation = location,
                         FkUser = user
@@ -244,6 +244,34 @@ namespace Visit.Service.BusinessLogic
                 _logger.LogError($"Could not create new post for user {user.Id}: {e}");
                 return new NewPostResponse();
             }
+        }
+
+        public async Task<NewPostResponse> EditPost(string claim, int postId, CreatePostRequest postRequest)
+        {
+            try
+            {
+                var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+                var user = await _visitContext.User.FindAsync(userId);
+
+                var post = await _visitContext.Post.Where(p => p.PostId == postId && p.FkUserId == userId)
+                    .FirstOrDefaultAsync();
+
+                post.PostCaption = postRequest.Caption;
+                
+                _visitContext.Post.Update(post);
+                await _visitContext.SaveChangesAsync();
+                return new NewPostResponse(true);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Could not edit post {postId}: {e}");
+                return new NewPostResponse();
+            }
+        }
+        
+        public async Task<NewPostResponse> DeletePost(string claim, int postId)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<bool> LikePost(string claim, string postId)
@@ -356,6 +384,30 @@ namespace Visit.Service.BusinessLogic
                 return false;
             }
         }
+
+        public async Task<bool> EditComment(string claim, int commentId, string commentText)
+        {
+            try
+            {
+                var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
+                var user = await _visitContext.User.FindAsync(userId);
+
+                var comment = await _visitContext.PostComment.Where(p => p.PostCommentId == commentId && p.FkUserIdOfCommenting == userId)
+                    .FirstOrDefaultAsync();
+
+                comment.CommentText = commentText;
+                
+                _visitContext.PostComment.Update(comment);
+                await _visitContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError($"Could not edit comment {commentId}: {e}");
+                return false;
+            }
+        }
+        
 
         private async Task<bool> SendUserNotification(User userWhoIsBeingNotified, User userNotifying, Post post,
             PostComment commentObj)

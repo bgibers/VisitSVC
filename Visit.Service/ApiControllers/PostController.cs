@@ -133,8 +133,19 @@ namespace Visit.Service.ApiControllers
             }
 
             return Unauthorized();
-            
-            
+        }
+        
+        [HttpPost("{postId}/edit")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<NewPostResponse>> EditPost(int postId, [FromForm] CreatePostRequest post)
+        { 
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _postService.EditPost(headerValue.Parameter, postId, post);
+            }
+            return Unauthorized();
         }
 
         #region Likes and comments
@@ -184,6 +195,25 @@ namespace Visit.Service.ApiControllers
             if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
             {
                 return await _postService.CommentOnPost(headerValue.Parameter, postId, comment.Comment);
+            }
+            return Unauthorized();
+        }
+        
+        /// <summary>
+        /// Edit a comment
+        /// </summary>
+        /// <param name="commentId"></param>
+        /// <param name="comment"></param>
+        /// <returns></returns>
+        [HttpPost("comment/{commentId}/edit")]
+        [ProducesResponseType(200)]
+        public async Task<ActionResult<bool>> EditComment(int commentId, [FromBody] CommentApi comment)
+        { 
+            var authorization = Request.Headers[HeaderNames.Authorization];
+
+            if (AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
+            {
+                return await _postService.EditComment(headerValue.Parameter, commentId, comment.Comment);
             }
             return Unauthorized();
         }
