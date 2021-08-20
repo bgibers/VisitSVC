@@ -36,6 +36,15 @@ namespace Visit.Service.BusinessLogic.Interfaces
         Task<NewPostResponse> CreatePost(string user, CreatePostRequest postRequest);
 
         /// <summary>
+        /// Edit a post caption
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <param name="postId"></param>
+        /// <param name="postRequest"></param>
+        /// <returns></returns>
+        Task<NewPostResponse> EditPost(string claim, int postId, CreatePostRequest postRequest);
+        
+        /// <summary>
         /// Allows a user to like a post
         /// </summary>
         /// <param name="user"></param>
@@ -52,6 +61,15 @@ namespace Visit.Service.BusinessLogic.Interfaces
         /// <returns></returns>
         Task<bool> CommentOnPost(string user, string postId, string comment);
 
+        /// <summary>
+        /// Edit a comment
+        /// </summary>
+        /// <param name="claim"></param>
+        /// <param name="commentId"></param>
+        /// <param name="commentText"></param>
+        /// <returns></returns>
+        Task<bool> EditComment(string claim, int commentId, string commentText);
+        
         /// <summary>
         /// Get all likes for post by postId
         /// </summary>
