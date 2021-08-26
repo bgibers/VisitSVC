@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Visit.DataAccess.Models
 {
@@ -21,7 +22,15 @@ namespace Visit.DataAccess.Models
         public string PostCaption { get; set; }
         public DateTime? PostTime { get; set; }
         public int? ReviewRating { get; set; }
+        public sbyte? Deleted { get; set; }
 
+        [NotMapped]
+        public bool IsDeleted
+        {
+            get => Deleted > 0;
+            set { this.Deleted = (sbyte)(value ? 1 : 0);  }
+        }
+        
         public virtual PostType FkPostType { get; set; }
         public virtual User FkUser { get; set; }
         public virtual ICollection<Like> Like { get; set; }

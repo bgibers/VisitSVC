@@ -143,21 +143,26 @@ namespace Visit.Service.BusinessLogic
                     Status = value,
                     Venue = "",
                     FkLocation = location,
-                    FkUser = user
+                    FkUser = user,
+                    IsCheckedOff = false
                 };
                 
                 var existingEntry = _visitContext.UserLocation.SingleOrDefault(e =>
-                    e.FkUser == user && e.FkLocation == location && e.Status == value);
+                    e.FkUser == user && e.FkLocation == location);
 
                 if (existingEntry != null)
                 {
+                    if (existingEntry.Status == value) return 0;
+                    existingEntry.IsCheckedOff = existingEntry.Status == "toVisit" && value == "visited";
                     existingEntry.Status = value;
                     _visitContext.UserLocation.Update(existingEntry);
+                    await _visitContext.SaveChangesAsync();
                     userLocation = existingEntry;
                 }
                 else
                 {
                     _visitContext.UserLocation.Add(userLocation);
+                    await _visitContext.SaveChangesAsync();
                 }
 
                 // If this isn't registration add the post to the timeline
