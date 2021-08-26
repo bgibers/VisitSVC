@@ -164,6 +164,10 @@ namespace Visit.DataAccess.EntityFramework
 
                 entity.Property(e => e.PostId).HasColumnType("int(11)");
 
+                entity.Property(e => e.Deleted)
+                    .HasColumnType("tinyint(4)")
+                    .HasDefaultValueSql("'0'");
+
                 entity.Property(e => e.FkPostTypeId)
                     .HasColumnName("FK_Post_TypeId")
                     .HasColumnType("int(11)");
@@ -213,6 +217,10 @@ namespace Visit.DataAccess.EntityFramework
                     .HasColumnType("varchar(500)")
                     .HasCharSet("utf8mb4")
                     .HasCollation("utf8mb4_general_ci");
+
+                entity.Property(e => e.Deleted)
+                    .HasColumnType("tinyint(4)")
+                    .HasDefaultValueSql("'0'");
 
                 entity.Property(e => e.FkPostId)
                     .HasColumnName("FK_PostId")
@@ -445,6 +453,11 @@ namespace Visit.DataAccess.EntityFramework
                 entity.Property(e => e.UserLocationId)
                     .HasColumnName("User_LocationId")
                     .HasColumnType("int(11)");
+
+                entity.Property(e => e.CheckedOff)
+                    .HasColumnName("Checked_Off")
+                    .HasColumnType("tinyint(4)")
+                    .HasDefaultValueSql("'0'");
 
                 entity.Property(e => e.City)
                     .HasColumnType("varchar(255)")

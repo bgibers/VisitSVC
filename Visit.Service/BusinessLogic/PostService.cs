@@ -251,7 +251,6 @@ namespace Visit.Service.BusinessLogic
             try
             {
                 var userId = (await _firebaseService.GetUserFromToken(claim)).Uid;
-                var user = await _visitContext.User.FindAsync(userId);
 
                 var post = await _visitContext.Post.Where(p => p.PostId == postId && p.FkUserId == userId)
                     .FirstOrDefaultAsync();
@@ -504,3 +503,4 @@ namespace Visit.Service.BusinessLogic
         }
     }
 }
+
