@@ -114,6 +114,11 @@
              services.AddTransient<IPostService, PostService>();
              services.AddTransient<IDevopsService, DevopsService>();
              services.AddTransient<IFirebaseService, FirebaseService>();
+
+             if (!Configuration["APPINSIGHTS_CONNECTIONSTRING"].Equals(""))
+             {
+                 services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_CONNECTIONSTRING"]);
+             }
              
              AddFireBase(services, Configuration);
 
