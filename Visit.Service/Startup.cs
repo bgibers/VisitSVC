@@ -115,7 +115,7 @@
              services.AddTransient<IDevopsService, DevopsService>();
              services.AddTransient<IFirebaseService, FirebaseService>();
 
-             if (Configuration["ASPNETCORE_ENVIRONMENT"].Equals("PRODUCTION"))
+             if (!Configuration["APPINSIGHTS_CONNECTIONSTRING"].Equals(""))
              {
                  services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_CONNECTIONSTRING"]);
              }
