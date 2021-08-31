@@ -37,6 +37,10 @@
 
          public void ConfigureServices(IServiceCollection services)
          {
+             if (!Configuration["APPINSIGHTS_CONNECTIONSTRING"].Equals(""))
+             {
+                 services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_CONNECTIONSTRING"]);
+             }
              
              // Config, DB, and swagger
              services.AddSingleton(Configuration);
@@ -114,7 +118,7 @@
              services.AddTransient<IPostService, PostService>();
              services.AddTransient<IDevopsService, DevopsService>();
              services.AddTransient<IFirebaseService, FirebaseService>();
-             
+
              AddFireBase(services, Configuration);
 
          }

@@ -136,67 +136,75 @@ namespace Visit.Service.BusinessLogic
             // request.locations contains <locationName,Status>
             foreach (var (key, value) in request.Locations)
             {
-                var location = _visitContext.Location.Single(f => f.LocationCode == key);
-                
-                var userLocation = new UserLocation
+                try
                 {
-                    Status = value,
-                    Venue = "",
-                    FkLocation = location,
-                    FkUser = user,
-                    IsCheckedOff = false
-                };
-                
-                var existingEntry = _visitContext.UserLocation.SingleOrDefault(e =>
-                    e.FkUser == user && e.FkLocation == location);
+                    var location = _visitContext.Location.Single(f => f.LocationCode == key);
 
-                if (existingEntry != null)
-                {
-                    if (existingEntry.Status == value) return 0;
-                    existingEntry.IsCheckedOff = existingEntry.Status == "toVisit" && value == "visited";
-                    existingEntry.Status = value;
-                    _visitContext.UserLocation.Update(existingEntry);
-                    await _visitContext.SaveChangesAsync();
-                    userLocation = existingEntry;
-                }
-                else
-                {
-                    _visitContext.UserLocation.Add(userLocation);
-                    await _visitContext.SaveChangesAsync();
-                }
-
-                // If this isn't registration add the post to the timeline
-                if (!request.Registration)
-                {
-                    var caption = "";
-                    PostType postType;
-                    if (value == "toVisit")
+                    var userLocation = new UserLocation
                     {
-                        caption = $"Has added {location.LocationName} to their bucket list. Any thoughts?";
-                        postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "toVisit");
+                        Status = value,
+                        Venue = "",
+                        FkLocation = location,
+                        FkUser = user,
+                        IsCheckedOff = false
+                    };
+
+                    var existingEntry = _visitContext.UserLocation.SingleOrDefault(e =>
+                        e.FkUser == user && e.FkLocation == location);
+
+                    if (existingEntry != null)
+                    {
+                        if (existingEntry.Status == value) return 0;
+                        existingEntry.IsCheckedOff = existingEntry.Status == "toVisit" && value == "visited";
+                        existingEntry.Status = value;
+                        _visitContext.UserLocation.Update(existingEntry);
+                        await _visitContext.SaveChangesAsync();
+                        userLocation = existingEntry;
                     }
                     else
                     {
-                        caption = $"Has visited {location.LocationName}. Ask them about it!";
-                        postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "visited");
+                        _visitContext.UserLocation.Add(userLocation);
+                        await _visitContext.SaveChangesAsync();
                     }
-                
-                    var post = new Post
-                    {
-                        PostContentLink = "",
-                        FkPostType = postType,
-                        PostCaption = caption,
-                        PostTime = DateTime.UtcNow,
-                        FkUser = user
-                    };
-                
-                    _visitContext.Post.Add(post);
 
-                    _visitContext.PostUserLocation.Add(new PostUserLocation
+                    // If this isn't registration add the post to the timeline
+                    if (!request.Registration)
                     {
-                        FkLocation = userLocation,
-                        FkPost = post
-                    });
+                        var caption = "";
+                        PostType postType;
+                        if (value == "toVisit")
+                        {
+                            caption = $"Has added {location.LocationName} to their bucket list. Any thoughts?";
+                            postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "toVisit");
+                        }
+                        else
+                        {
+                            caption = $"Has visited {location.LocationName}. Ask them about it!";
+                            postType = _visitContext.PostType.SingleOrDefault(t => t.Type == "visited");
+                        }
+
+                        var post = new Post
+                        {
+                            PostContentLink = "",
+                            FkPostType = postType,
+                            PostCaption = caption,
+                            PostTime = DateTime.UtcNow,
+                            FkUser = user
+                        };
+
+                        _visitContext.Post.Add(post);
+
+                        _visitContext.PostUserLocation.Add(new PostUserLocation
+                        {
+                            FkLocation = userLocation,
+                            FkPost = post
+                        });
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"Couldn't add location {key} for user {user.Id} with status {value}");
+                    throw new Exception($"Couldn't add location {key} for user {user.Id} with status {value}.");
                 }
             }
             
